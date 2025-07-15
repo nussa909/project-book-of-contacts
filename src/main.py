@@ -108,7 +108,7 @@ def add_note(kwards, notebook):
 
     if not title or not text:
         raise InputError(
-            "add_note : title or\and text of note was not provided")
+            "add_note : title or\\and text of note was not provided")
 
     tags = {}
     if tags_str:
@@ -165,7 +165,7 @@ def remove_note(kwards, notebook):
 
 @error_handler
 def add_tag(kwards, notebook):
-    # TODO: add_tag -id note_id -tag #tag
+    # add_tag -id note_id -tag #tag
     pass
 
 
@@ -183,8 +183,16 @@ def show_notes(kwards, notebook):
 
 @error_handler
 def find_notes(kwards, notebook):
-    # TODO: find_notes -tag #tag
-    pass
+    # find_notes -tags #tag1,#tag2
+    tags_str = kwards.get("tags")
+
+    tags = {}
+    if tags_str:
+        tags_str = tags_str.lower().strip()
+        tags = set(tags_str.split(","))
+
+    res = notebook.find_note_by_tags(tags)
+    return sorted(res, key=Note.sort_by_title)
 
 
 @error_handler
@@ -195,6 +203,7 @@ def say_bye(kwards, bot):
 
 
 class Command:
+
     def __init__(self, command, func, receiver):
         self.command = command
         self.func = func
@@ -227,6 +236,8 @@ class ConsoleBot:
                            Command("remove_note", remove_note,
                                    self.__notes.object),
                            Command("change_note", change_note,
+                                   self.__notes.object),
+                           Command("find_notes", find_notes,
                                    self.__notes.object),
                            # TODO: add note's commands
                            Command("close", say_bye, self),
@@ -296,10 +307,10 @@ if __name__ == "__main__":
 
 # notebook = Notebook()
 
-# user_input = "add_note -title headline -text Note message -tags #tag1,#tag2"
+# user_input = "add_note -title headline -text Note message -tags #tag2,#tag1,personal"
 # cmd, kwargs = parse_input_ext(user_input)
 # add_note(kwargs, notebook)
-# print(notebook)
+# # print(notebook)
 
 # user_input = "add_note -title Покупки -text Купить хлеб и молоко -tags buy,important"
 # cmd, kwargs = parse_input_ext(user_input)
@@ -317,3 +328,14 @@ if __name__ == "__main__":
 # cmd, kwargs = parse_input_ext(user_input)
 # change_note(kwargs, notebook)
 # print(notebook)
+
+# user_input = "add_note -title abc -text my_mail@gmail.com, pass:1234 -tags important"
+# cmd, kwargs = parse_input_ext(user_input)
+# add_note(kwargs, notebook)
+# print(notebook)
+
+# print("*"*10)
+# user_input = "find_notes -tags buy,important"
+# cmd, kwargs = parse_input_ext(user_input)
+# res = find_notes(kwargs, notebook)
+# print(res)
