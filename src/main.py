@@ -101,8 +101,24 @@ def show_help(kwards, _):
 
 @error_handler
 def add_note(kwards, notebook):
-    # TODO: add_note -text Note message -tags #tag1,#tag2
-    pass
+    # TODO: add_note -title headline -text Note message -tags #tag1,#tag2
+    title = kwards.get("title")
+    text = kwards.get("text")
+    tags_str = kwards.get("tags")
+
+    if not title or not text:
+        raise InputError(
+            "add_note : title or\and text of note was not provided")
+
+    tags = {}
+    if tags_str:
+        tags_str = tags_str.lower().strip()
+        tags = set(tags_str.split(","))
+
+    note = Note(title, text, tags)
+    notebook.add_note(note)
+
+    return "Note added"
 
 
 @error_handler
@@ -220,16 +236,16 @@ if __name__ == "__main__":
 
 
 # add -name Joe Dow -phone 01233456789 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000
-# def parse_input_ext(user_input):
-#     param_dct = {}
-#     cmd, *args = user_input.split("-")
-#     cmd = cmd.strip().lower()
+def parse_input_ext(user_input):
+    param_dct = {}
+    cmd, *args = user_input.split("-")
+    cmd = cmd.strip().lower()
 
-#     for item in args:
-#         params = item.split()
-#         param_dct.update({params[0]: " ".join(params[1:])})
+    for item in args:
+        params = item.split()
+        param_dct.update({params[0] : " ".join(params[1:])})
 
-#     return cmd, param_dct
+    return cmd, param_dct
 
 
 # book = AddressBook()
@@ -243,3 +259,9 @@ if __name__ == "__main__":
 # input_text = "show -phone -name Jow Dow"
 # cmd, params = parse_input_ext(input_text)
 # print(cmd, params)
+
+# notebook = Notebook()
+# user_input = "add_note -title headline -text Note message -tags #tag1,#tag2"
+# cmd, kwargs = parse_input_ext(user_input)
+# add_note(kwargs, notebook)
+# print(notebook)
