@@ -1,0 +1,13 @@
+@startuml AddressBook
+
+
+class "UserDict" as ud  
+class "AddressBook" as addrbook  
+class "Record" as rcd  
+
+
+ud <|-- addrbook  
+addrbook "1" *-- "N" rcd 
+
+
+@enduml

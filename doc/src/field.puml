@@ -1,0 +1,16 @@
+@startuml Field hierarhy
+
+class "Field" as fld
+class "Name" as name 
+class "Phone" as phone 
+class "Birthday" as brth 
+class "Email" as email 
+class "Address" as addr 
+
+fld <|-- name
+fld <|-- phone
+fld <|-- brth
+fld <|-- email
+fld <|-- addr
+
+@enduml

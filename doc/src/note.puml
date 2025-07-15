@@ -1,0 +1,19 @@
+@startuml AddressBook
+
+
+class "UserList" as ul  
+class "NoteBook" as notebook  
+class "Note" as note 
+{
+    +id
+    +header
+    +text 
+    +tags[]
+} 
+
+
+ul <|-- notebook  
+notebook "1" *-- "N" note 
+
+
+@enduml

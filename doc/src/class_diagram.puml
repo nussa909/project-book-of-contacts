@@ -1,0 +1,33 @@
+ 	
+
+@startuml Class diagram
+
+class "AddressBook" as addrbook 
+class "Notebook" as notebook
+class "ConsoleBot" as cb 
+class "Command" as cmd 
+{
+    -params 
+    -func 
+    -receiver    
+}
+
+
+
+cb *-- addrbook  
+cb *-- notebook
+cb -->"create" cmd
+cmd ..> addrbook
+cmd ..> notebook
+cmd ..> cb
+
+note bottom of cmd
+    receiver.operation()
+end note
+
+
+
+
+
+@enduml
+
