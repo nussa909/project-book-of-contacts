@@ -1,0 +1,18 @@
+@startuml Record
+
+
+class "Name" as name 
+class "Phone" as phone 
+class "Birthday" as brth 
+class "Email" as email 
+class "Address" as addr 
+class "Record" as rcd 
+
+
+rcd *-- name 
+rcd "1" *-- "N" phone 
+rcd *-- email  
+rcd *-- addr  
+rcd *-- brth 
+
+@enduml
