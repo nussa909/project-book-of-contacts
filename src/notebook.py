@@ -52,8 +52,8 @@ class Notebook(UserList):
             if note.id == id:
                 return note
 
-    def show(self):
-        pass
+    def get_notes(self):
+        return self.data
 
     def __str__(self):
         return f"Notebook:\n{"\n".join(str(note) for note in self.data)}"

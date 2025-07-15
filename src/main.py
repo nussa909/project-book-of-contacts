@@ -166,19 +166,49 @@ def remove_note(kwards, notebook):
 @error_handler
 def add_tag(kwards, notebook):
     # add_tag -id note_id -tag #tag
-    pass
+
+    id = int(kwards.get("id"))
+    tag = kwards.get("tag")
+
+    if not id or not tag:
+        raise InputError("add_tag : id or tag of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = f"Tag {tag} for note was added"
+    if note:
+        note.add_tag(tag)
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def remove_tag(kwards, notebook):
-    # TODO: remove_tag id_note -tag #tag
-    pass
+    # remove_tag id_note -tag #tag
+    id = int(kwards.get("id"))
+    tag = kwards.get("tag")
+
+    if not id or not tag:
+        raise InputError("remove_tag : id or tag of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = f"Tag {tag} for note was removed"
+    if note:
+        note.remove_tag(tag)
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def show_notes(kwards, notebook):
-    # TODO: show_notes -sort #tag -filter #tag
-    pass
+    notes = notebook.get_notes()
+    return sorted(notes, key=lambda note: (
+        ", ".join(sorted(list(note.tags))) if note.tags else "",
+        note.id
+    ))
 
 
 @error_handler
@@ -239,7 +269,12 @@ class ConsoleBot:
                                    self.__notes.object),
                            Command("find_notes", find_notes,
                                    self.__notes.object),
-                           # TODO: add note's commands
+                           Command("add_tag", add_tag,
+                                   self.__notes.object),
+                           Command("remove_tag", remove_tag,
+                                   self.__notes.object),
+                           Command("show_notes", show_notes,
+                                   self.__notes.object),
                            Command("close", say_bye, self),
                            Command("exit", say_bye, self)]
         self.__is_running = False
@@ -307,7 +342,7 @@ if __name__ == "__main__":
 
 # notebook = Notebook()
 
-# user_input = "add_note -title headline -text Note message -tags #tag2,#tag1,personal"
+# user_input = "add_note -title headline -text Note message -tags personal"
 # cmd, kwargs = parse_input_ext(user_input)
 # add_note(kwargs, notebook)
 # # print(notebook)
@@ -329,7 +364,7 @@ if __name__ == "__main__":
 # change_note(kwargs, notebook)
 # print(notebook)
 
-# user_input = "add_note -title abc -text my_mail@gmail.com, pass:1234 -tags important"
+# user_input = "add_note -title abc -text my_mail@gmail.com, pass:1234 -tags important,personal"
 # cmd, kwargs = parse_input_ext(user_input)
 # add_note(kwargs, notebook)
 # print(notebook)
@@ -338,4 +373,10 @@ if __name__ == "__main__":
 # user_input = "find_notes -tags buy,important"
 # cmd, kwargs = parse_input_ext(user_input)
 # res = find_notes(kwargs, notebook)
+# print(res)
+
+# print("*"*10)
+# user_input = "show_notes"
+# cmd, kwargs = parse_input_ext(user_input)
+# res = show_notes(kwargs, notebook)
 # print(res)
