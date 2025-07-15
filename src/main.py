@@ -101,7 +101,7 @@ def show_help(kwards, _):
 
 @error_handler
 def add_note(kwards, notebook):
-    # TODO: add_note -title headline -text Note message -tags #tag1,#tag2
+    # add_note -title headline -text Note message -tags #tag1,#tag2
     title = kwards.get("title")
     text = kwards.get("text")
     tags_str = kwards.get("tags")
@@ -129,8 +129,20 @@ def change_note(kwards, notebook):
 
 @error_handler
 def remove_note(kwards, notebook):
-    # TODO: remove_note -id note_id
-    pass
+    # remove_note -id note_id
+    id = int(kwards.get("id"))
+
+    if not id:
+        raise InputError("remove_note : id of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = "Note was removed"
+    if note:
+        notebook.remove_note(note)
+    else:
+        message = "Note did not found"
+
+    return message
 
 
 @error_handler
@@ -194,6 +206,8 @@ class ConsoleBot:
                                    self.__book.object),
                            Command("birthdays", birthdays, self.__book.object),
                            Command("add_note", add_note, self.__notes.object),
+                           Command("remove_note", remove_note,
+                                   self.__notes.object),
                            # TODO: add note's commands
                            Command("close", say_bye, self),
                            Command("exit", say_bye, self)]
@@ -236,16 +250,16 @@ if __name__ == "__main__":
 
 
 # add -name Joe Dow -phone 01233456789 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000
-def parse_input_ext(user_input):
-    param_dct = {}
-    cmd, *args = user_input.split("-")
-    cmd = cmd.strip().lower()
+# def parse_input_ext(user_input):
+#     param_dct = {}
+#     cmd, *args = user_input.split("-")
+#     cmd = cmd.strip().lower()
 
-    for item in args:
-        params = item.split()
-        param_dct.update({params[0] : " ".join(params[1:])})
+#     for item in args:
+#         params = item.split()
+#         param_dct.update({params[0]: " ".join(params[1:])})
 
-    return cmd, param_dct
+#     return cmd, param_dct
 
 
 # book = AddressBook()
@@ -261,7 +275,19 @@ def parse_input_ext(user_input):
 # print(cmd, params)
 
 # notebook = Notebook()
+
 # user_input = "add_note -title headline -text Note message -tags #tag1,#tag2"
 # cmd, kwargs = parse_input_ext(user_input)
 # add_note(kwargs, notebook)
+# print(notebook)
+
+# user_input = "add_note -title Покупки -text Купить хлеб и молоко -tags buy,important"
+# cmd, kwargs = parse_input_ext(user_input)
+# add_note(kwargs, notebook)
+# print(notebook)
+
+# print("*"*10)
+# user_input = "remove_note -id 1"
+# cmd, kwargs = parse_input_ext(user_input)
+# remove_note(kwargs, notebook)
 # print(notebook)
