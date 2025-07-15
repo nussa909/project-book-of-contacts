@@ -123,8 +123,26 @@ def add_note(kwards, notebook):
 
 @error_handler
 def change_note(kwards, notebook):
-    # TODO: change_note -id note_id -old old message -new new message
-    pass
+    # change_note -id note_id -title new title -text new text
+    id = int(kwards.get("id"))
+    new_title = kwards.get("title")
+    new_text = kwards.get("text")
+
+    if not id and not (new_title or new_text):
+        raise InputError(
+            "change_note : id or modifying attribute was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = "Note was updated"
+    if note:
+        if new_text:
+            note.text = new_text
+        if new_title:
+            note.header = new_title
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
@@ -140,7 +158,7 @@ def remove_note(kwards, notebook):
     if note:
         notebook.remove_note(note)
     else:
-        message = "Note did not found"
+        message = "Note was not found"
 
     return message
 
@@ -207,6 +225,8 @@ class ConsoleBot:
                            Command("birthdays", birthdays, self.__book.object),
                            Command("add_note", add_note, self.__notes.object),
                            Command("remove_note", remove_note,
+                                   self.__notes.object),
+                           Command("change_note", change_note,
                                    self.__notes.object),
                            # TODO: add note's commands
                            Command("close", say_bye, self),
@@ -290,4 +310,10 @@ if __name__ == "__main__":
 # user_input = "remove_note -id 1"
 # cmd, kwargs = parse_input_ext(user_input)
 # remove_note(kwargs, notebook)
+# print(notebook)
+
+# print("*"*10)
+# user_input = "change_note -id 1 -title Email password -text my_mail@gmail.com, pass:1234"
+# cmd, kwargs = parse_input_ext(user_input)
+# change_note(kwargs, notebook)
 # print(notebook)
