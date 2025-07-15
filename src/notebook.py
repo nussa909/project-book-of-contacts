@@ -5,6 +5,10 @@ from collections import UserList
 class Note:
     current_id = 0
 
+    @staticmethod
+    def sort_by_title(note):
+        return (note.header.lower())
+
     def __init__(self, header: str, text: str, tags={}):
         self.id = Note.__get_next_id()
         self.header = header
@@ -39,8 +43,9 @@ class Notebook(UserList):
     def remove_note(self, note: Note):
         self.data.remove(note)
 
-    def find_note_by_tags(self, tags: str):
-        pass
+    def find_note_by_tags(self, tags):
+        tags = set(tags)
+        return [note for note in self.data if tags & note.tags]
 
     def find_note_by_id(self, id: int):
         for note in self.data:
@@ -68,3 +73,7 @@ class Notebook(UserList):
 # notebook.add_note(note2)
 
 # print(notebook)
+
+# print(notebook.find_note_by_tags(["buy","none"]))
+# print(notebook.find_note_by_tags(["important"]))
+# print(notebook.find_note_by_tags(["high"]))
