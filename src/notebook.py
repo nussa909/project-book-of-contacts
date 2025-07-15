@@ -36,10 +36,8 @@ class Notebook(UserList):
     def add_note(self, note: Note):
         self.data.append(note)
 
-    def remove_note(self, id: int):
-        note = self.find_note_by_id(id)
-        if note:
-            self.data.remove(note)
+    def remove_note(self, note: Note):
+        self.data.remove(note)
 
     def find_note_by_tags(self, tags: str):
         pass
