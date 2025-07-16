@@ -32,11 +32,10 @@ class Note:
         return f"#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
 
     def __repr__(self):
-        return f"#{self.id}:{self.header}"
+        return f"\n#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
 
 
 class Notebook(UserList):
-
     def add_note(self, note: Note):
         self.data.append(note)
 
@@ -55,25 +54,11 @@ class Notebook(UserList):
     def get_notes(self):
         return self.data
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if self.data:
+            Note.current_id = max(note.id for note in self.data)
+        print(f"__setstate__:{len(self.data)}, {Note.current_id}")
+
     def __str__(self):
         return f"Notebook:\n{"\n".join(str(note) for note in self.data)}"
-
-# note = Note("Покупки", "Купити молоко та яйця",{"important"})
-# note.add_tag("buy")
-# print(note)
-
-# # note.remove_tag("important")
-# print(note)
-
-# note2 = Note("email password", "email: my_email@gmail.com, pass:1234")
-# note2.add_tag("important")
-
-# notebook = Notebook()
-# notebook.add_note(note)
-# notebook.add_note(note2)
-
-# print(notebook)
-
-# print(notebook.find_note_by_tags(["buy","none"]))
-# print(notebook.find_note_by_tags(["important"]))
-# print(notebook.find_note_by_tags(["high"]))

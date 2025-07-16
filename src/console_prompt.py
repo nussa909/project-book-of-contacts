@@ -294,17 +294,3 @@ class CommandPrompt:
             params = builder.build()
 
         return (cmd, params)
-
-
-# res = CommandPrompt().prompt()
-# print(res)
-
-# print(Command.ADD == "add")
-
-# str = "add"
-# cmd = Command(str)
-# match cmd:
-#     case Command.ADD:
-#         print(True)
-#     case _:
-#         print(False)
