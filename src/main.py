@@ -2,11 +2,14 @@ from addressbook import AddressBook, Record
 from notebook import Notebook, Note
 from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
+from console_prompt import Command as ECommand
+from console_prompt import CommandPrompt
 
 
 ############################ bot's commands #########################################
 @error_handler
 def add_contact(kwards, book):
+    # add -name Joe Dow -phone 01233456789 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000
     name = kwards.get("name")
     phone = kwards.get("phone")
     email = kwards.get("email")
@@ -235,7 +238,7 @@ def say_bye(kwards, bot):
 class Command:
 
     def __init__(self, command, func, receiver):
-        self.command = command
+        self.command = command.value
         self.func = func
         self.receiver = receiver
 
@@ -251,40 +254,45 @@ class ConsoleBot:
     def __init__(self):
         self.__book = SerializedObject("addressbook.pkl", AddressBook())
         self.__notes = SerializedObject("notebook.pkl", Notebook())
-        self.__commands = [Command("help", show_help, self.__book.object),
-                           Command("add", add_contact, self.__book.object),
-                           Command("change", change_contact,
+        self.__commands = [Command(ECommand.HELP, show_help, self.__book.object),
+                           Command(ECommand.ADD, add_contact,
                                    self.__book.object),
-                           Command("remove", remove_contact,
+                           Command(ECommand.CHANGE, change_contact,
                                    self.__book.object),
-                           Command("find", find_contact, self.__book.object),
-                           Command("show", show_details, self.__book.object),
-                           Command("all", show_all_contacts,
+                           Command(ECommand.REMOVE, remove_contact,
                                    self.__book.object),
-                           Command("birthdays", birthdays, self.__book.object),
-                           Command("add_note", add_note, self.__notes.object),
-                           Command("remove_note", remove_note,
+                           Command(ECommand.FIND, find_contact,
+                                   self.__book.object),
+                           Command(ECommand.SHOW_DETAILS,
+                                   show_details, self.__book.object),
+                           Command(ECommand.ALL, show_all_contacts,
+                                   self.__book.object),
+                           Command(ECommand.BIRTHDAYS, birthdays,
+                                   self.__book.object),
+                           Command(ECommand.ADD_NOTE, add_note,
                                    self.__notes.object),
-                           Command("change_note", change_note,
+                           Command(ECommand.REMOVE_NOTE, remove_note,
                                    self.__notes.object),
-                           Command("find_notes", find_notes,
+                           Command(ECommand.CHANGE_NOTE, change_note,
                                    self.__notes.object),
-                           Command("add_tag", add_tag,
+                           Command(ECommand.FIND_NOTES, find_notes,
                                    self.__notes.object),
-                           Command("remove_tag", remove_tag,
+                           Command(ECommand.ADD_TAGS, add_tag,
                                    self.__notes.object),
-                           Command("show_notes", show_notes,
+                           Command(ECommand.REMOVE_TAGS, remove_tag,
                                    self.__notes.object),
-                           Command("close", say_bye, self),
-                           Command("exit", say_bye, self)]
+                           Command(ECommand.SHOW_NOTES, show_notes,
+                                   self.__notes.object),
+                           Command(ECommand.CLOSE, say_bye, self),
+                           Command(ECommand.EXIT, say_bye, self)]
         self.__is_running = False
 
     def start(self):
         print("Welcome to the assistant bot!")
         self.__is_running = True
         while self.__is_running:
-            user_input = input("Enter a command: ")
-            command, *args = self.__parse_input(user_input)
+            command, args = CommandPrompt().prompt()
+            command = command.strip().lower()
 
             try:
                 index = self.__commands.index(command)
@@ -297,17 +305,6 @@ class ConsoleBot:
 
     def stop(self):
         self.__is_running = False
-
-    def __parse_input(self, user_input):
-        param_dct = {}
-        cmd, *args = user_input.split("-")
-        cmd = cmd.strip().lower()
-
-        for item in args:
-            params = item.split()
-            param_dct.update({params[0]: " ".join(params[1:])})
-
-        return cmd, param_dct
 
 
 if __name__ == "__main__":
