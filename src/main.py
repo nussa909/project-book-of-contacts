@@ -101,44 +101,128 @@ def show_help(kwards, _):
 
 @error_handler
 def add_note(kwards, notebook):
-    # TODO: add_note -text Note message -tags #tag1,#tag2
-    pass
+    # add_note -title headline -text Note message -tags #tag1,#tag2
+    title = kwards.get("title")
+    text = kwards.get("text")
+    tags_str = kwards.get("tags")
+
+    if not title or not text:
+        raise InputError(
+            "add_note : title or\\and text of note was not provided")
+
+    tags = {}
+    if tags_str:
+        tags_str = tags_str.lower().strip()
+        tags = set(tags_str.split(","))
+
+    note = Note(title, text, tags)
+    notebook.add_note(note)
+
+    return "Note added"
 
 
 @error_handler
 def change_note(kwards, notebook):
-    # TODO: change_note -id note_id -old old message -new new message
-    pass
+    # change_note -id note_id -title new title -text new text
+    id = int(kwards.get("id"))
+    new_title = kwards.get("title")
+    new_text = kwards.get("text")
+
+    if not id and not (new_title or new_text):
+        raise InputError(
+            "change_note : id or modifying attribute was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = "Note was updated"
+    if note:
+        if new_text:
+            note.text = new_text
+        if new_title:
+            note.header = new_title
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def remove_note(kwards, notebook):
-    # TODO: remove_note -id note_id
-    pass
+    # remove_note -id note_id
+    id = int(kwards.get("id"))
+
+    if not id:
+        raise InputError("remove_note : id of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = "Note was removed"
+    if note:
+        notebook.remove_note(note)
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def add_tag(kwards, notebook):
-    # TODO: add_tag -id note_id -tag #tag
-    pass
+    # add_tag -id note_id -tag #tag
+
+    id = int(kwards.get("id"))
+    tag = kwards.get("tag")
+
+    if not id or not tag:
+        raise InputError("add_tag : id or tag of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = f"Tag {tag} for note was added"
+    if note:
+        note.add_tag(tag)
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def remove_tag(kwards, notebook):
-    # TODO: remove_tag id_note -tag #tag
-    pass
+    # remove_tag id_note -tag #tag
+    id = int(kwards.get("id"))
+    tag = kwards.get("tag")
+
+    if not id or not tag:
+        raise InputError("remove_tag : id or tag of note was not provided")
+
+    note = notebook.find_note_by_id(id)
+    message = f"Tag {tag} for note was removed"
+    if note:
+        note.remove_tag(tag)
+    else:
+        message = "Note was not found"
+
+    return message
 
 
 @error_handler
 def show_notes(kwards, notebook):
-    # TODO: show_notes -sort #tag -filter #tag
-    pass
+    notes = notebook.get_notes()
+    return sorted(notes, key=lambda note: (
+        ", ".join(sorted(list(note.tags))) if note.tags else "",
+        note.id
+    ))
 
 
 @error_handler
 def find_notes(kwards, notebook):
-    # TODO: find_notes -tag #tag
-    pass
+    # find_notes -tags #tag1,#tag2
+    tags_str = kwards.get("tags")
+
+    tags = {}
+    if tags_str:
+        tags_str = tags_str.lower().strip()
+        tags = set(tags_str.split(","))
+
+    res = notebook.find_note_by_tags(tags)
+    return sorted(res, key=Note.sort_by_title)
 
 
 @error_handler
@@ -149,6 +233,7 @@ def say_bye(kwards, bot):
 
 
 class Command:
+
     def __init__(self, command, func, receiver):
         self.command = command
         self.func = func
@@ -178,7 +263,18 @@ class ConsoleBot:
                                    self.__book.object),
                            Command("birthdays", birthdays, self.__book.object),
                            Command("add_note", add_note, self.__notes.object),
-                           # TODO: add note's commands
+                           Command("remove_note", remove_note,
+                                   self.__notes.object),
+                           Command("change_note", change_note,
+                                   self.__notes.object),
+                           Command("find_notes", find_notes,
+                                   self.__notes.object),
+                           Command("add_tag", add_tag,
+                                   self.__notes.object),
+                           Command("remove_tag", remove_tag,
+                                   self.__notes.object),
+                           Command("show_notes", show_notes,
+                                   self.__notes.object),
                            Command("close", say_bye, self),
                            Command("exit", say_bye, self)]
         self.__is_running = False
@@ -217,29 +313,3 @@ class ConsoleBot:
 if __name__ == "__main__":
     console_bot = ConsoleBot()
     console_bot.start()
-
-
-# add -name Joe Dow -phone 01233456789 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000
-# def parse_input_ext(user_input):
-#     param_dct = {}
-#     cmd, *args = user_input.split("-")
-#     cmd = cmd.strip().lower()
-
-#     for item in args:
-#         params = item.split()
-#         param_dct.update({params[0]: " ".join(params[1:])})
-
-#     return cmd, param_dct
-
-
-# book = AddressBook()
-# input_text = "add -name Joe Dow -phone 0123456789,2222222222 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000"
-# cmd, params = parse_input_ext(input_text)
-# print(cmd, params)
-
-# add_contact(params, book)
-# print(book)
-
-# input_text = "show -phone -name Jow Dow"
-# cmd, params = parse_input_ext(input_text)
-# print(cmd, params)
