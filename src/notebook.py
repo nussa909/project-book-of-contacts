@@ -58,7 +58,6 @@ class Notebook(UserList):
         self.__dict__.update(state)
         if self.data:
             Note.current_id = max(note.id for note in self.data)
-        print(f"__setstate__:{len(self.data)}, {Note.current_id}")
 
     def __str__(self):
         return f"Notebook:\n{"\n".join(str(note) for note in self.data)}"
