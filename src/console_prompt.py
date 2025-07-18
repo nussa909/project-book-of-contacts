@@ -85,6 +85,7 @@ class Builder:
         completer = FirstWordCompleter(completer_list)
         property = self.session.prompt(
             prompt, completer=completer)
+        property = property.strip()
         return property
 
     def build(self):
