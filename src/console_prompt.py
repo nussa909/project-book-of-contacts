@@ -3,6 +3,7 @@ from prompt_toolkit.completion import Completer, Completion, DummyCompleter
 from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import FormattedText
 from enum import Enum
+from exceptions import InputError, error_handler
 
 
 class Command(Enum):
@@ -139,7 +140,7 @@ class ChangeBuilder(ContactBuilder):
             case ContactKeys.BIRTHDAY.value:
                 self.get_birthday()
             case _:
-                print("Invalid param")
+                raise InputError("Invalid param")
 
         return self.result
 
@@ -166,7 +167,7 @@ class FindBuilder(ContactBuilder):
             case ContactKeys.BIRTHDAY.value:
                 self.get_birthday()
             case _:
-                print("Invalid input")
+                raise InputError("Invalid input")
         return self.result
 
 
@@ -185,7 +186,7 @@ class ShowDetailsBuilder(ContactBuilder):
             case ContactKeys.BIRTHDAY.value:
                 self.get_birthday()
             case _:
-                print("Invalid input")
+                raise InputError("Invalid input")
         return self.result
 
 
@@ -281,9 +282,15 @@ class CommandPrompt:
             case _:
                 return Builder(self.session)
 
+    def dump_prompt(self):
+        self.session.prompt(
+            "Press Enter to continue:")
+
+    @error_handler
     def prompt(self):
         command_completer = FirstWordCompleter(
             [command.value for command in Command])
+
         cmd = self.session.prompt(
             "Enter command:", completer=command_completer)
 
