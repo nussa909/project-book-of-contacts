@@ -1,3 +1,5 @@
+from console_output import ConsoleOutput
+
 
 class ValidationError(Exception):
     pass
@@ -16,15 +18,15 @@ def error_handler(func):
         try:
             return func(*args, **kwargs)
         except ValidationError as err:
-            print(f"ValidationError: {err}")
+            ConsoleOutput().print_error(f"Validation error!: {err}")
         except PhoneNotFoundError as err:
-            print(f"PhoneNotFoundError: {err}")
+            ConsoleOutput().print_error(f"Phone not found!: {err}")
         except InputError as err:
-            print(f"InputError: {err}")
+            ConsoleOutput().print_error(f"Input error!: {err}")
         except KeyError as err:
-            print(f"KeyError: {err}")
+            ConsoleOutput().print_error(f"Error!: {err}")
         except ValueError as err:
-            print(f"ValueError: {err}")
+            ConsoleOutput().print_error(f"Error!: {err}")
         except Exception as err:
-            print(f"Exception: {err}")
+            ConsoleOutput().print_error(f"Error: {err}")
     return inner

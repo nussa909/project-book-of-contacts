@@ -4,6 +4,7 @@ from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
 from console_prompt import CommandPrompt
+from console_output import ConsoleOutput
 
 
 ############################ bot's commands #########################################
@@ -15,7 +16,7 @@ def add_contact(kwards, book):
     email = kwards.get("email")
     address = kwards.get("address")
     birthday = kwards.get("birthday")
-    if not name: 
+    if not name:
         raise InputError("add - no name of contact was entered")
     else:
         if len(kwards) <= 1:
@@ -47,7 +48,7 @@ def add_contact(kwards, book):
     if birthday:
         record.change_birthday(birthday)
 
-    return message
+    ConsoleOutput().print_msg(message)
 
 
 @error_handler
@@ -60,23 +61,26 @@ def change_contact(kwards, book):
     address = kwards.get("address")
     birthday = kwards.get("birthday")
 
-    if not name: 
+    if not name:
         raise InputError("change - no name of contact was entered")
     else:
         if old_phone is None and new_phone is None and not (email or address or birthday):
             raise InputError("change - too less parameters were entered")
         elif (old_phone is None and new_phone is not None) or (old_phone is not None and new_phone is None):
-            raise InputError("change - both old and new phone numbers must be provided")
-   
+            raise InputError(
+                "change - both old and new phone numbers must be provided")
+
     record = book.find(name)
     if record is None:
         raise InputError(f"change - contact '{name}' not found")
-    
+
     if old_phone and new_phone:
         if record.find_phone(new_phone):
-            raise InputError(f"change - new phone '{new_phone}' already exists for contact '{name}'")   
+            raise InputError(
+                f"change - new phone '{new_phone}' already exists for contact '{name}'")
         if not record.change_phone(old_phone, new_phone):
-            raise InputError(f"change - old phone '{old_phone}' not found for contact '{name}'")
+            raise InputError(
+                f"change - old phone '{old_phone}' not found for contact '{name}'")
 
     if email:
         record.change_email(email)
@@ -107,7 +111,7 @@ def find_contact(kwards, book):
     birthday = kwards.get("birthday")
     if len(kwards) == 0:
         raise InputError("find - too less parameters were entered")
-    
+
     if name:
         return book.find_records(name, 'name')
     if phone:
@@ -120,8 +124,6 @@ def find_contact(kwards, book):
         return book.find_records(birthday, 'birthday')
 
 
-
-
 @error_handler
 def show_details(kwards, book):
     # TODO: show [-phone|-email|-address|-birthday] -name Joe Dow
@@ -130,32 +132,38 @@ def show_details(kwards, book):
 
 @error_handler
 def show_all_contacts(kwards, book):
-    return f"{book}"
+    return ConsoleOutput().print_object_list(book.get_all_contacts())
 
 
 @error_handler
 def birthdays(kwards, book):
     days = kwards.get("days", 7)
-    print(f"People to congratulate next {days} days:")
-    return '\n'.join(f"{name} : {birthday}" for name, birthday in book.get_upcoming_birthdays(days).items())
+    ConsoleOutput().print_msg(f"People to congratulate next {days} days:")
+    ConsoleOutput().print_map(("Name", "Birthday"),
+                              book.get_upcoming_birthdays(days))
 
 
 @error_handler
-def show_help(kwards, _):
-    # TODO: update and make it colorful
-    message = """Possible commands:
-    hello - greeting
-    help - show help message
-    add <name> <phone> <birthday> - add new contact
-    change <name> <old phone> <new phone> <birthday> - modify existing contact
-    phone <name> - print phone for dedicated contact
-    all - print all contacts
-    add-birthday <name> <birthday> - add birthday to contact
-    show-birthday <name> - show birthday for dedicated contact
-    birthdays - show contact who will celebrate birthday in next 7 days
-    close/exit - exit bot
-    """
-    return message
+def show_help(kwards=None, _=None):
+    command_map = {
+        "hello": "Greet the user",
+        "help": "Show commands description",
+        "add": "Add new contact",
+        "change": "Edit contact",
+        "remove": "Remove the contact",
+        "find": "Find contact by selected criteria",
+        "all": "Display all contacts",
+        "birthdays": "Display contacts who have birthday next week and date when you have to condratulate them",
+        "add_note": "Add new note",
+        "remove_note": "Remove dedicated note",
+        "change_note": "Edit dedicated note",
+        "find_note": "Find notes by selected criteria",
+        "add_tag": "Add tag to selected note",
+        "remove_tag": "Remove tag from selected note",
+        "show_notes": "Display notes sorted by tags",
+        "exit/close": "Exit the application"
+    }
+    ConsoleOutput().print_map(("Command", "Description"), command_map)
 
 
 @error_handler
@@ -177,7 +185,7 @@ def add_note(kwards, notebook):
     note = Note(title, text, tags)
     notebook.add_note(note)
 
-    return "Note added"
+    ConsoleOutput().print_msg("Note added")
 
 
 @error_handler
@@ -201,7 +209,7 @@ def change_note(kwards, notebook):
     else:
         message = "Note was not found"
 
-    return message
+    ConsoleOutput().print_msg(message)
 
 
 @error_handler
@@ -219,7 +227,7 @@ def remove_note(kwards, notebook):
     else:
         message = "Note was not found"
 
-    return message
+    ConsoleOutput().print_msg(message)
 
 
 @error_handler
@@ -239,7 +247,7 @@ def add_tag(kwards, notebook):
     else:
         message = "Note was not found"
 
-    return message
+    ConsoleOutput().print_msg(message)
 
 
 @error_handler
@@ -258,16 +266,15 @@ def remove_tag(kwards, notebook):
     else:
         message = "Note was not found"
 
-    return message
+    ConsoleOutput().print_msg(message)
 
 
 @error_handler
 def show_notes(kwards, notebook):
     notes = notebook.get_notes()
-    return sorted(notes, key=lambda note: (
+    ConsoleOutput().print_object_list(sorted(notes, key=lambda note: (
         ", ".join(sorted(list(note.tags))) if note.tags else "",
-        note.id
-    ))
+        note.id)))
 
 
 @error_handler
@@ -281,13 +288,13 @@ def find_notes(kwards, notebook):
         tags = set(tags_str.split(","))
 
     res = notebook.find_note_by_tags(tags)
-    return sorted(res, key=Note.sort_by_title)
+    ConsoleOutput().print_object_list(sorted(res))
 
 
 @error_handler
 def say_bye(kwards, bot):
     bot.stop()
-    return "Good bye!"
+    ConsoleOutput().print_msg("Good buy!")
 ##############################################################################
 
 
@@ -344,8 +351,9 @@ class ConsoleBot:
         self.__is_running = False
 
     def start(self):
-    
-        print("Welcome to the assistant bot!")
+        ConsoleOutput().print_msg("Welcome to the assistant bot!")
+        show_help()
+
         self.__is_running = True
         while self.__is_running:
             command, args = CommandPrompt().prompt()
@@ -353,9 +361,13 @@ class ConsoleBot:
 
             try:
                 index = self.__commands.index(command)
-                print(self.__commands[index](args))
+                self.__commands[index](args)
             except ValueError:
-                print("Invalid command.")
+                ConsoleOutput().print_error("Error: Invalid command")
+
+            if self.__is_running:
+                CommandPrompt().dump_prompt()
+                ConsoleOutput().clear()
 
         self.__book.save_data()
         self.__notes.save_data()
