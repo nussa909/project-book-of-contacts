@@ -1,6 +1,4 @@
 # PyContacts
-![Logo_PyContacts](https://github.com/nussa909/project-book-of-contacts/doc/image/Logo_PyContacts.png)
-
  **PyContacts** is a personal assistant for managing contacts and notes, developed as part of a team educational project within the Python Programming course.
 
 # Features
