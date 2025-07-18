@@ -1,7 +1,7 @@
 # PyContacts
 ![Logo_PyContacts](https://github.com/nussa909/project-book-of-contacts/doc/images/Logo_PyContacts.png)
 
- PyContacts is a personal assistant for managing contacts and notes, developed as part of a team educational project within the Python Programming course.
+ **PyContacts** is a personal assistant for managing contacts and notes, developed as part of a team educational project within the Python Programming course.
 
 # Features
 The personal assistant is developed with a command-line interface. It saves data to disk, so it is not lost after a restart. The prompt_toolkit library is used for handling inputs and prompts, while rich is used to provide a user-friendly interface.
