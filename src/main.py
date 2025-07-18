@@ -362,19 +362,24 @@ class ConsoleBot:
 
         self.__is_running = True
         while self.__is_running:
-            command, args = CommandPrompt().prompt()
-            command = command.strip().lower()
-            print(args)
-
             try:
-                index = self.__commands.index(command)
-                self.__commands[index](args)
-            except ValueError:
-                ConsoleOutput().print_error("Error: Invalid command")
 
-            if self.__is_running:
-                CommandPrompt().dump_prompt()
-                ConsoleOutput().clear()
+                command, args = CommandPrompt().prompt()
+                command = command.strip().lower()
+                print(args)
+
+                try:
+                    index = self.__commands.index(command)
+                    self.__commands[index](args)
+                except ValueError:
+                    ConsoleOutput().print_error("Error: Invalid command")
+
+                if self.__is_running:
+                    CommandPrompt().dump_prompt()
+                    ConsoleOutput().clear()
+
+            except Exception as err:
+                ConsoleOutput().print_error(f"Error: {err}")
 
         self.__book.save_data()
         self.__notes.save_data()

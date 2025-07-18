@@ -287,7 +287,6 @@ class CommandPrompt:
         self.session.prompt(
             "Press Enter to continue:")
 
-    @error_handler
     def prompt(self):
         command_completer = FirstWordCompleter(
             [command.value for command in Command])
