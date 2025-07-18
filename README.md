@@ -1,5 +1,6 @@
 # PyContacts
-![Logo_PyContacts](https://github.com/nussa909/project-book-of-contacts/images/Logo_PyContacts.png)
+![Logo_PyContacts](https://github.com/nussa909/project-book-of-contacts/doc/images/Logo_PyContacts.png)
+
  PyContacts is a personal assistant for managing contacts and notes, developed as part of a team educational project within the Python Programming course.
 
 # Features
@@ -25,20 +26,23 @@ The personal assistant is developed with a command-line interface. It saves data
 PyContacts is tested for Python 3.13 and above.
 
  **Clone the repo**:
-```git clone https://github.com/nussa909/project-book-of-contacts.git
+```
+git clone https://github.com/nussa909/project-book-of-contacts.git
 cd project-book-of-contacts 
 ```
 **Creating a virtual environment (optional)**:
 ```
-python -m venv venv
+python -m venv .venv
 source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 ```
 **Installing dependencies**:
-```pip3 install -r requirements.txt
+```
+pip3 install -r requirements.txt
 ```
 **Run**:
-```python3 ./src/main.py # Linux/macOS
+```
+python3 ./src/main.py # Linux/macOS
 python3 .\src\main.py # Windows
 ```
 
@@ -47,50 +51,86 @@ Usage from command-line
 pip installation enables PyContact's command-line utility. Type the following directly into your terminal:
 
 **Add Contact**:
-Enter command: add
-name: Tom
-phones: 380938744552, 380678744551
-email Tom@gmail.com 
-address: Ukraine, Kyiv, Some St 45 
-birthday: 18.03.1990
-Mandatory parameters:name, +1 parameter from the existing  (phones, email, address, birthday)
+Enter command:add
+name:Tom
+phones:+380932488447
+email:tom@gmail.com
+address:Ukraine, Kyiv, Vlad St.,35
+birthday:01.01.1990
+Contact Tom added
+_Mandatory parameters: name, + 1 additional parameter from the existing options: phone, email, address, or birthday_
 
 **Find Contact by any parameter**:
-Enter command: find
-find criteria: name
-name: _any from the existing paramers (name, phones, email, address, birthday)_
+Enter command:find
+find criteria:name
+name:tom
+[Tom: phones=+380678521474; email=tom@gmail.com; address=Ukraine, Kyiv, Vlad St.,35; birthday=01.01.1990]
+_Can be found using any of the existing parameters: name, phone, email, address, or birthday_
 
 **Change Contact by any parameter**:
-Enter command: change
-find criteria: phones
-phones: _any from the existing paramers (name, phones, email, address, birthday)_
+Enter command:change
+name:Tom
+what property are you gonna change:phone
+old phone:+380932488447
+new phone:+380678521474
+Contact updated
+_Can be updated using any of the existing parameters: name, phones, email, address, birthday_
 
 **Remove Contact by name**:
-remove -name Joe Dow
+Enter command:remove
+name:tom
+Contact 'tom' removed
+_Can be removed by name parameter only_
 
 **Show all Contacts**:
--all
+Enter command:all
+Address book:
+Tom: phones=+380932488447; email=tom@gmail.com; address=Ukraine, Kyiv, Vlad St.,35; birthday=01.01.1990
 
 **Add Note**:
-add_note -text Note message -tags #tag1,#tag2
+Enter command: add_note
+title: check
+text: project status
+tags:T1, T2
 
 **Edit Note**:
-change_note -id note_id -old old message -new new message
+Enter command:change_note
+id:2
+title:1 time
+text: check human resources one time only
+Note was updated
 
 **Remove Note**:
-remove_note -id note_id
+Enter command:remove_note
+id:1
+Note was removed
 
 **Add Tag to Note**:
-add_tag -id note_id -tag #tag
+Enter command:add_tags
+id:1
+tag:T3
+Tag T3 for note was added
 
 **Remove Tag from Note**:
-remove_tag -id note_id -tag #tag
+Enter command:remove_tags
+id:1
+tag:t1
+Tag t1 for note was removed
 
 **Find Note by Tag**:
-find_notes -tag #tag
+Enter command:find_notes
+tags:T1
+[
+#1:check
+tags:['t1', ' t2']
+project status]
 
-**Show Notes sorted by Tag**:
-show_notes -sort #tag
+**Show Notes**:
+Enter command: show_notes
+[
+#1:check
+tags:['t1', ' t2']
+project status]
 
 
 > "Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.
