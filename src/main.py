@@ -137,8 +137,11 @@ def show_details(kwards, book):
 
 
 @error_handler
-def show_all_contacts(kwards, book):
-    ConsoleOutput().print_object_list(book.get_all_contacts())
+def show_all_contacts(kwards, books):
+    if "notes" in kwards:
+        ConsoleOutput().print_object_list(books[1].get_notes())
+    else:
+        ConsoleOutput().print_object_list(books[0].get_all_contacts())
 
 
 @error_handler
@@ -335,7 +338,7 @@ class ConsoleBot:
                            Command(ECommand.SHOW_DETAILS,
                                    show_details, self.__book.object),
                            Command(ECommand.ALL, show_all_contacts,
-                                   self.__book.object),
+                                   (self.__book.object, self.__notes.object)),
                            Command(ECommand.BIRTHDAYS, birthdays,
                                    self.__book.object),
                            Command(ECommand.ADD_NOTE, add_note,
@@ -366,7 +369,6 @@ class ConsoleBot:
 
                 command, args = CommandPrompt().prompt()
                 command = command.strip().lower()
-                print(args)
 
                 try:
                     index = self.__commands.index(command)
