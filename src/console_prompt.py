@@ -85,6 +85,7 @@ class Builder:
         completer = FirstWordCompleter(completer_list)
         property = self.session.prompt(
             prompt, completer=completer)
+        property = property.strip()
         return property
 
     def build(self):
@@ -207,6 +208,15 @@ class NoteBuilder(Builder):
         self.get_property("tag:", NoteKeys.TAG.value)
 
 
+class AllBuilder(Builder):
+    def build(self):
+        property = self.what("contacts or notes:", ["contacts", "notes"])
+        if property:
+            property = property.strip()
+            self.result.update({property: None})
+        return self.result
+
+
 class AddNoteBuilder(NoteBuilder):
     def build(self):
         self.get_title()
@@ -279,6 +289,8 @@ class CommandPrompt:
                 return AddTagBuilder(self.session)
             case Command.REMOVE_TAGS.value:
                 return RemoveTagBuilder(self.session)
+            case Command.ALL.value:
+                return AllBuilder(self.session)
             case _:
                 return Builder(self.session)
 
@@ -286,7 +298,6 @@ class CommandPrompt:
         self.session.prompt(
             "Press Enter to continue:")
 
-    @error_handler
     def prompt(self):
         command_completer = FirstWordCompleter(
             [command.value for command in Command])

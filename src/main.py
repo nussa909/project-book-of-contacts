@@ -53,7 +53,7 @@ def add_contact(kwards, book):
 
 @error_handler
 def change_contact(kwards, book):
-    # TODO: change -phone -name Joe Dow -old 0123456789 -new 9876543210
+    # change -phone -name Joe Dow -old 0123456789 -new 9876543210
     name = kwards.get("name")
     old_phone = kwards.get("old_phone")
     new_phone = kwards.get("new_phone")
@@ -91,7 +91,7 @@ def change_contact(kwards, book):
     if birthday:
         record.change_birthday(birthday)
 
-    return "Contact updated"
+    ConsoleOutput().print_msg("Contact updated")
 
 
 @error_handler
@@ -99,7 +99,9 @@ def remove_contact(kwards, book):
     name = kwards.get("name")
     if not name:
         raise InputError("remove - no name of contact was entered")
-    return book.remove(name) and f"Contact '{name}' removed" or f"Contact '{name}' not found"
+    book.remove(name)
+    ConsoleOutput().print_msg(
+        f"Contact '{name}' removed" or f"Contact '{name}' not found")
 
 
 @error_handler
@@ -112,16 +114,20 @@ def find_contact(kwards, book):
     if len(kwards) == 0:
         raise InputError("find - too less parameters were entered")
 
+    res = None
     if name:
-        return book.find_records(name, 'name')
+        res = book.find_records(name, 'name')
     if phone:
-        return book.find_records(phone, 'phone')
+        res = book.find_records(phone, 'phone')
     if email:
-        return book.find_records(email, 'email')
+        res = book.find_records(email, 'email')
     if address:
-        return book.find_records(address, 'address')
+        res = book.find_records(address, 'address')
     if birthday:
-        return book.find_records(birthday, 'birthday')
+        res = book.find_records(birthday, 'birthday')
+
+    print(res)
+    ConsoleOutput().print_object_list(res)
 
 
 @error_handler
@@ -131,8 +137,11 @@ def show_details(kwards, book):
 
 
 @error_handler
-def show_all_contacts(kwards, book):
-    return ConsoleOutput().print_object_list(book.get_all_contacts())
+def show_all_contacts(kwards, books):
+    if "notes" in kwards:
+        ConsoleOutput().print_object_list(books[1].get_notes())
+    else:
+        ConsoleOutput().print_object_list(books[0].get_all_contacts())
 
 
 @error_handler
@@ -329,7 +338,7 @@ class ConsoleBot:
                            Command(ECommand.SHOW_DETAILS,
                                    show_details, self.__book.object),
                            Command(ECommand.ALL, show_all_contacts,
-                                   self.__book.object),
+                                   (self.__book.object, self.__notes.object)),
                            Command(ECommand.BIRTHDAYS, birthdays,
                                    self.__book.object),
                            Command(ECommand.ADD_NOTE, add_note,
@@ -356,18 +365,23 @@ class ConsoleBot:
 
         self.__is_running = True
         while self.__is_running:
-            command, args = CommandPrompt().prompt()
-            command = command.strip().lower()
-
             try:
-                index = self.__commands.index(command)
-                self.__commands[index](args)
-            except ValueError:
-                ConsoleOutput().print_error("Error: Invalid command")
 
-            if self.__is_running:
-                CommandPrompt().dump_prompt()
-                ConsoleOutput().clear()
+                command, args = CommandPrompt().prompt()
+                command = command.strip().lower()
+
+                try:
+                    index = self.__commands.index(command)
+                    self.__commands[index](args)
+                except ValueError:
+                    ConsoleOutput().print_error("Error: Invalid command")
+
+                if self.__is_running:
+                    CommandPrompt().dump_prompt()
+                    ConsoleOutput().clear()
+
+            except Exception as err:
+                ConsoleOutput().print_error(f"Error: {err}")
 
         self.__book.save_data()
         self.__notes.save_data()
