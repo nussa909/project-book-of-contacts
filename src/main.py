@@ -15,10 +15,11 @@ def add_contact(kwards, book):
     email = kwards.get("email")
     address = kwards.get("address")
     birthday = kwards.get("birthday")
-
-    if not name or len(kwards) <= 1:
-        raise InputError(
-            "add : no name of contact or too less parameters were entered")
+    if not name: 
+        raise InputError("add - no name of contact was entered")
+    else:
+        if len(kwards) <= 1:
+            raise InputError("add - too less parameters were entered")
 
     record = book.find(name)
     message = f"Contact {name} updated"
@@ -38,13 +39,13 @@ def add_contact(kwards, book):
             record.add_phone(phone)
 
     if email:
-        record.add_email(email)
+        record.change_email(email)
 
     if address:
-        record.add_address(address)
+        record.change_address(address)
 
     if birthday:
-        record.add_birthday(birthday)
+        record.change_birthday(birthday)
 
     return message
 
@@ -52,19 +53,73 @@ def add_contact(kwards, book):
 @error_handler
 def change_contact(kwards, book):
     # TODO: change -phone -name Joe Dow -old 0123456789 -new 9876543210
-    pass
+    name = kwards.get("name")
+    old_phone = kwards.get("old_phone")
+    new_phone = kwards.get("new_phone")
+    email = kwards.get("email")
+    address = kwards.get("address")
+    birthday = kwards.get("birthday")
+
+    if not name: 
+        raise InputError("change - no name of contact was entered")
+    else:
+        if old_phone is None and new_phone is None and not (email or address or birthday):
+            raise InputError("change - too less parameters were entered")
+        elif (old_phone is None and new_phone is not None) or (old_phone is not None and new_phone is None):
+            raise InputError("change - both old and new phone numbers must be provided")
+   
+    record = book.find(name)
+    if record is None:
+        raise InputError(f"change - contact '{name}' not found")
+    
+    if old_phone and new_phone:
+        if record.find_phone(new_phone):
+            raise InputError(f"change - new phone '{new_phone}' already exists for contact '{name}'")   
+        if not record.change_phone(old_phone, new_phone):
+            raise InputError(f"change - old phone '{old_phone}' not found for contact '{name}'")
+
+    if email:
+        record.change_email(email)
+
+    if address:
+        record.change_address(address)
+
+    if birthday:
+        record.change_birthday(birthday)
+
+    return "Contact updated"
 
 
 @error_handler
 def remove_contact(kwards, book):
-    # TODO: remove -name Joe Dow
-    pass
+    name = kwards.get("name")
+    if not name:
+        raise InputError("remove - no name of contact was entered")
+    return book.remove(name) and f"Contact '{name}' removed" or f"Contact '{name}' not found"
 
 
 @error_handler
 def find_contact(kwards, book):
-    # TODO: find [-phone|-email|-address|-birthday|-name] <value>
-    pass
+    name = kwards.get("name")
+    phone = kwards.get("phone")
+    email = kwards.get("email")
+    address = kwards.get("address")
+    birthday = kwards.get("birthday")
+    if len(kwards) == 0:
+        raise InputError("find - too less parameters were entered")
+    
+    if name:
+        return book.find_records(name, 'name')
+    if phone:
+        return book.find_records(phone, 'phone')
+    if email:
+        return book.find_records(email, 'email')
+    if address:
+        return book.find_records(address, 'address')
+    if birthday:
+        return book.find_records(birthday, 'birthday')
+
+
 
 
 @error_handler
@@ -80,8 +135,9 @@ def show_all_contacts(kwards, book):
 
 @error_handler
 def birthdays(kwards, book):
-    print("People to congratulate next week:")
-    return '\n'.join(f"{name} : {birthday}" for name, birthday in book.get_upcoming_birthdays().items())
+    days = kwards.get("days", 7)
+    print(f"People to congratulate next {days} days:")
+    return '\n'.join(f"{name} : {birthday}" for name, birthday in book.get_upcoming_birthdays(days).items())
 
 
 @error_handler
@@ -288,6 +344,7 @@ class ConsoleBot:
         self.__is_running = False
 
     def start(self):
+    
         print("Welcome to the assistant bot!")
         self.__is_running = True
         while self.__is_running:
