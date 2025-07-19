@@ -3,7 +3,7 @@ from notebook import Notebook, Note
 from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
-from console_prompt import CommandPrompt, ContactKeys 
+from console_prompt import CommandPrompt, ContactKeys
 from console_output import ConsoleOutput
 
 
@@ -126,7 +126,6 @@ def find_contact(kwards, book):
     if birthday:
         res = book.find_records(birthday, 'birthday')
 
-
     ConsoleOutput().print_object_list(res)
 
 
@@ -137,12 +136,13 @@ def show_details(kwards, book):
     if not name:
         raise InputError("show - no name of contact was entered")
     if filter not in [ContactKeys.PHONE.value, ContactKeys.EMAIL.value, ContactKeys.ADDRESS.value, ContactKeys.BIRTHDAY.value]:
-        raise InputError(f"show - invalid filter '{filter}' provided. Valid filters are: phone, email, address, birthday")
+        raise InputError(
+            f"show - invalid filter '{filter}' provided. Valid filters are: phone, email, address, birthday")
     record = book.find(name)
     if record is None:
         raise InputError(f"show - contact '{name}' not found")
     messgae = ""
-    data={}
+    data = {}
     match filter:
         case ContactKeys.PHONE.value:
             phones = record.phones
@@ -151,7 +151,7 @@ def show_details(kwards, book):
             else:
                 for idx, phone in enumerate(record.phones, start=1):
                     data[f"Phone #{idx}"] = phone
-                #messgae = f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
+                # messgae = f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
         case ContactKeys.EMAIL.value:
             email = record.email
             if not email:
@@ -195,6 +195,7 @@ def birthdays(kwards, book):
         raise InputError(f"birthdays - days {days} must be more than 0")
     ConsoleOutput().print_msg(f"People to congratulate next {days} days:")
     ConsoleOutput().print_map(("Name", "Birthday"), book.get_upcoming_birthdays(days))
+
 
 @error_handler
 def show_help(kwards=None, _=None):
@@ -366,7 +367,8 @@ class Command:
 
 
 class ConsoleBot:
-    """Console bot for managing contacts and notes.""" 
+    """Console bot for managing contacts and notes."""
+
     def __init__(self):
         """Initialize the console bot with commands and data."""
         self.__book = SerializedObject("addressbook.pkl", AddressBook())
@@ -407,7 +409,7 @@ class ConsoleBot:
     def start(self):
         ConsoleOutput().clear()
         ConsoleOutput().print_msg("Welcome to the assistant bot!")
-        show_help() 
+        show_help()
         """Start the console bot."""
         self.__is_running = True
         while self.__is_running:
@@ -421,10 +423,6 @@ class ConsoleBot:
                     self.__commands[index](args)
                 except ValueError:
                     ConsoleOutput().print_error("Error: Invalid command")
-
-                if self.__is_running:
-                    CommandPrompt().dump_prompt()
-                    ConsoleOutput().clear()
 
             except Exception as err:
                 ConsoleOutput().print_error(f"Error: {err}")
