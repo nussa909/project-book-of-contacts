@@ -115,7 +115,7 @@ Note was removed
 `Enter command:`add_tags\
 `id:`1\
 `tag:`T3\
-Tag T3 for note was added\
+Tag T3 for note was added
 
 **Remove Tag from Note**:\
 `Enter command:`remove_tags\
