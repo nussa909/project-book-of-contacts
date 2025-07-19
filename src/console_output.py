@@ -54,3 +54,17 @@ class ConsoleOutput:
 
     def clear(self):
         self.__console.clear()
+
+    def print_map_with_title(self, title: str, data: dict):
+        """
+        title  – title of the table.
+        data   – dictionary with data to print.
+        """
+        table = Table(title=title, show_header=False)
+        table.add_column("Field", style="blue", no_wrap=True)
+        table.add_column("Value", style="green", no_wrap=True)
+
+        for key, value in data.items():
+            table.add_row(str(key), str(value))
+
+        self.__console.print(table)

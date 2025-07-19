@@ -1,7 +1,6 @@
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion, DummyCompleter
 from prompt_toolkit.styles import Style
-from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter

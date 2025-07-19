@@ -3,7 +3,6 @@ from notebook import Notebook, Note
 from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
-from console_prompt import clear
 from console_prompt import CommandPrompt, ContactKeys 
 from console_output import ConsoleOutput
 
@@ -133,7 +132,6 @@ def find_contact(kwards, book):
 
 @error_handler
 def show_details(kwards, book):
-    # TODO: show [-phone|-email|-address|-birthday] -name Joe Dow
     name = kwards.get("name")
     filter = kwards.get("filter")
     if not name:
@@ -143,28 +141,39 @@ def show_details(kwards, book):
     record = book.find(name)
     if record is None:
         raise InputError(f"show - contact '{name}' not found")
-    
+    messgae = ""
+    data={}
     match filter:
         case ContactKeys.PHONE.value:
             phones = record.phones
             if not phones:
-                return f"Contact '{record.name}' has no phone numbers"
-            return f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
+                messgae = f"Contact '{record.name}' has no phone numbers"
+            else:
+                for idx, phone in enumerate(record.phones, start=1):
+                    data[f"Phone #{idx}"] = phone
+                #messgae = f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
         case ContactKeys.EMAIL.value:
             email = record.email
             if not email:
-                return f"Contact '{record.name}' has no email"
-            return f"Email for {record.name}: {email}"
+                messgae = f"Contact '{record.name}' has no email"
+            else:
+                data["Email"] = record.email
         case ContactKeys.ADDRESS.value:
             address = record.address
             if not address:
-                return f"Contact '{record.name}' has no address"
-            return f"Address for {record.name}: {address}"
+                messgae = f"Contact '{record.name}' has no address"
+            else:
+                data["Address"] = record.address
         case ContactKeys.BIRTHDAY.value:
             birthday = record.birthday
             if not birthday:
-                return f"Contact '{record.name}' has no birthday"
-            return f"Birthday for {record.name}: {birthday}"
+                messgae = f"Contact '{record.name}' has no birthday"
+            else:
+                data["Birthday"] = record.birthday
+    if messgae:
+        ConsoleOutput().print_msg(messgae)
+    else:
+        ConsoleOutput().print_map_with_title('', data)
 
 
 @error_handler
@@ -185,8 +194,7 @@ def birthdays(kwards, book):
     if days < 1:
         raise InputError(f"birthdays - days {days} must be more than 0")
     ConsoleOutput().print_msg(f"People to congratulate next {days} days:")
-    ConsoleOutput().print_map(("Name", "Birthday"),
-                              book.get_upcoming_birthdays(days))
+    ConsoleOutput().print_map(("Name", "Birthday"), book.get_upcoming_birthdays(days))
 
 @error_handler
 def show_help(kwards=None, _=None):
@@ -397,7 +405,7 @@ class ConsoleBot:
         self.__is_running = False
 
     def start(self):
-        clear() 
+        ConsoleOutput().clear()
         ConsoleOutput().print_msg("Welcome to the assistant bot!")
         show_help() 
         """Start the console bot."""
