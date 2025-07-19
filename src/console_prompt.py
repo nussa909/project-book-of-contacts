@@ -297,10 +297,6 @@ class CommandPrompt:
             case _:
                 return Builder(self.session)
 
-    def dump_prompt(self):
-        self.session.prompt(
-            "Press Enter to continue:")
-
     def prompt(self):
         """Prompt the user for a command and its parameters."""
         command_completer = FirstWordCompleter(
