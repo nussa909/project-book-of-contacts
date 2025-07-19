@@ -3,8 +3,8 @@ from notebook import Notebook, Note
 from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
-from console_prompt import CommandPrompt
-
+from console_prompt import clear
+from console_prompt import CommandPrompt, ContactKeys
 
 ############################ bot's commands #########################################
 @error_handler
@@ -120,12 +120,40 @@ def find_contact(kwards, book):
         return book.find_records(birthday, 'birthday')
 
 
-
-
 @error_handler
 def show_details(kwards, book):
     # TODO: show [-phone|-email|-address|-birthday] -name Joe Dow
-    pass
+    name = kwards.get("name")
+    filter = kwards.get("filter")
+    if not name:
+        raise InputError("show - no name of contact was entered")
+    if filter not in [ContactKeys.PHONE.value, ContactKeys.EMAIL.value, ContactKeys.ADDRESS.value, ContactKeys.BIRTHDAY.value]:
+        raise InputError(f"show - invalid filter '{filter}' provided. Valid filters are: phone, email, address, birthday")
+    record = book.find(name)
+    if record is None:
+        raise InputError(f"show - contact '{name}' not found")
+    
+    match filter:
+        case ContactKeys.PHONE.value:
+            phones = record.phones
+            if not phones:
+                return f"Contact '{record.name}' has no phone numbers"
+            return f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
+        case ContactKeys.EMAIL.value:
+            email = record.email
+            if not email:
+                return f"Contact '{record.name}' has no email"
+            return f"Email for {record.name}: {email}"
+        case ContactKeys.ADDRESS.value:
+            address = record.address
+            if not address:
+                return f"Contact '{record.name}' has no address"
+            return f"Address for {record.name}: {address}"
+        case ContactKeys.BIRTHDAY.value:
+            birthday = record.birthday
+            if not birthday:
+                return f"Contact '{record.name}' has no birthday"
+            return f"Birthday for {record.name}: {birthday}"
 
 
 @error_handler
@@ -136,9 +164,14 @@ def show_all_contacts(kwards, book):
 @error_handler
 def birthdays(kwards, book):
     days = kwards.get("days", 7)
+    try:
+        days = int(days)
+    except ValueError:
+        raise InputError(f"birthdays - days {days} must be a positive integer")
+    if days < 1:
+        raise InputError(f"birthdays - days {days} must be more than 0")
     print(f"People to congratulate next {days} days:")
     return '\n'.join(f"{name} : {birthday}" for name, birthday in book.get_upcoming_birthdays(days).items())
-
 
 @error_handler
 def show_help(kwards, _):
@@ -306,8 +339,9 @@ class Command:
 
 
 class ConsoleBot:
-
+    """Console bot for managing contacts and notes.""" 
     def __init__(self):
+        """Initialize the console bot with commands and data."""
         self.__book = SerializedObject("addressbook.pkl", AddressBook())
         self.__notes = SerializedObject("notebook.pkl", Notebook())
         self.__commands = [Command(ECommand.HELP, show_help, self.__book.object),
@@ -344,7 +378,8 @@ class ConsoleBot:
         self.__is_running = False
 
     def start(self):
-    
+        clear()  
+        """Start the console bot."""
         print("Welcome to the assistant bot!")
         self.__is_running = True
         while self.__is_running:

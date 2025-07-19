@@ -1,7 +1,10 @@
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion, DummyCompleter
 from prompt_toolkit.styles import Style
+from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.completion import WordCompleter
 from enum import Enum
 
 
@@ -33,6 +36,7 @@ class ContactKeys(Enum):
     BIRTHDAY = "birthday"
     OLD_PHONE = "old_phone"
     NEW_PHONE = "new_phone"
+    DAYS = "days"
 
 
 class NoteKeys(Enum):
@@ -61,6 +65,8 @@ style = Style.from_dict({
     "prompt": "#884444",
     "command": "#00aa00",
     "params": "#0003aa",
+    'completion-menu.completion.current': 'bold underline fg:white bg:ansiblue',
+    'completion-menu.meta.completion.current': 'italic fg:white bg:ansiblue'
 })
 
 
@@ -105,6 +111,9 @@ class ContactBuilder(Builder):
 
     def get_birthday(self):
         self.get_property("birthday:", ContactKeys.BIRTHDAY.value)
+
+    def get_days(self):
+        self.get_property("days:", ContactKeys.DAYS.value)
 
 
 class AddBuilder(ContactBuilder):
@@ -169,25 +178,18 @@ class FindBuilder(ContactBuilder):
                 print("Invalid input")
         return self.result
 
+class BirthdaysBuilder(ContactBuilder):
+    def build(self):
+        self.get_days()
+        return self.result
 
 class ShowDetailsBuilder(ContactBuilder):
     def build(self):
         filter = self.what("filter criteria:", [
                            ContactKeys.PHONE.value, ContactKeys.EMAIL.value, ContactKeys.ADDRESS.value, ContactKeys.BIRTHDAY.value])
         self.get_name()
-        match filter:
-            case ContactKeys.PHONE.value:
-                self.get_phone()
-            case ContactKeys.EMAIL.value:
-                self.get_email()
-            case ContactKeys.ADDRESS.value:
-                self.get_address()
-            case ContactKeys.BIRTHDAY.value:
-                self.get_birthday()
-            case _:
-                print("Invalid input")
+        self.result.update({'filter': filter})
         return self.result
-
 
 class NoteBuilder(Builder):
     def get_id(self):
@@ -205,14 +207,12 @@ class NoteBuilder(Builder):
     def get_tag(self):
         self.get_property("tag:", NoteKeys.TAG.value)
 
-
 class AddNoteBuilder(NoteBuilder):
     def build(self):
         self.get_title()
         self.get_text()
         self.get_tags()
         return self.result
-
 
 class ChangeNoteBuilder(NoteBuilder):
     def build(self):
@@ -250,7 +250,8 @@ class FindNotesBuilder(NoteBuilder):
 
 class CommandPrompt:
     def __init__(self):
-        self.session = PromptSession(style=style)
+        history = FileHistory('command_history.txt')
+        self.session = PromptSession(style=style, history=history)   
         self.result = ()
 
     def get_builder(self, command):
@@ -278,14 +279,18 @@ class CommandPrompt:
                 return AddTagBuilder(self.session)
             case Command.REMOVE_TAGS.value:
                 return RemoveTagBuilder(self.session)
+            case Command.BIRTHDAYS.value:
+                return BirthdaysBuilder(self.session)
             case _:
                 return Builder(self.session)
 
     def prompt(self):
+        """Prompt the user for a command and its parameters."""
         command_completer = FirstWordCompleter(
             [command.value for command in Command])
         cmd = self.session.prompt(
-            "Enter command:", completer=command_completer)
+           "Enter command:", completer=command_completer)
+
 
         params = {}
         if cmd:
