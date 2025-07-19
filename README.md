@@ -31,8 +31,8 @@ cd project-book-of-contacts
 **Creating a virtual environment (optional)**:
 ```
 python -m venv .venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
 ```
 **Installing dependencies**:
 ```
@@ -115,7 +115,7 @@ Note was removed
 `Enter command:`add_tags\
 `id:`1\
 `tag:`T3\
-Tag T3 for note was added
+Tag T3 for note was added 
 
 **Remove Tag from Note**:\
 `Enter command:`remove_tags\
@@ -139,6 +139,7 @@ project status]
 #1:check\
 `tags:`['t1', ' t2']\
 project status]
+
 
 
 
