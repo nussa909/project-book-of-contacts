@@ -27,6 +27,9 @@ class Note:
     def __get_next_id(cls):
         cls.current_id += 1
         return cls.current_id
+    
+    def __lt__(self, other):
+        return self.id < other.id
 
     def __str__(self):
         return f"#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"

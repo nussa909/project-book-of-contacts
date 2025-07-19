@@ -6,6 +6,7 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from enum import Enum
+from exceptions import InputError, error_handler
 
 
 class Command(Enum):
@@ -90,6 +91,7 @@ class Builder:
         completer = FirstWordCompleter(completer_list)
         property = self.session.prompt(
             prompt, completer=completer)
+        property = property.strip()
         return property
 
     def build(self):
@@ -148,7 +150,7 @@ class ChangeBuilder(ContactBuilder):
             case ContactKeys.BIRTHDAY.value:
                 self.get_birthday()
             case _:
-                print("Invalid param")
+                raise InputError("Invalid param")
 
         return self.result
 
@@ -175,7 +177,7 @@ class FindBuilder(ContactBuilder):
             case ContactKeys.BIRTHDAY.value:
                 self.get_birthday()
             case _:
-                print("Invalid input")
+                raise InputError("Invalid input")
         return self.result
 
 class BirthdaysBuilder(ContactBuilder):
@@ -206,6 +208,16 @@ class NoteBuilder(Builder):
 
     def get_tag(self):
         self.get_property("tag:", NoteKeys.TAG.value)
+
+
+class AllBuilder(Builder):
+    def build(self):
+        property = self.what("contacts or notes:", ["contacts", "notes"])
+        if property:
+            property = property.strip()
+            self.result.update({property: None})
+        return self.result
+
 
 class AddNoteBuilder(NoteBuilder):
     def build(self):
@@ -281,13 +293,20 @@ class CommandPrompt:
                 return RemoveTagBuilder(self.session)
             case Command.BIRTHDAYS.value:
                 return BirthdaysBuilder(self.session)
+            case Command.ALL.value:
+                return AllBuilder(self.session)
             case _:
                 return Builder(self.session)
+
+    def dump_prompt(self):
+        self.session.prompt(
+            "Press Enter to continue:")
 
     def prompt(self):
         """Prompt the user for a command and its parameters."""
         command_completer = FirstWordCompleter(
             [command.value for command in Command])
+
         cmd = self.session.prompt(
            "Enter command:", completer=command_completer)
 

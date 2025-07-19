@@ -192,6 +192,9 @@ class AddressBook(UserDict):
     def __init__(self,):
         super().__init__()
 
+    def get_all_contacts(self):
+        return [contact for _, contact in self.data.items()]
+
     def add_record(self, record: Record):
         self.data.update({record.name.value.lower(): record})
 
