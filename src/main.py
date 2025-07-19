@@ -200,13 +200,12 @@ def birthdays(kwards, book):
 @error_handler
 def show_help(kwards=None, _=None):
     command_map = {
-        "hello": "Greet the user",
         "help": "Show commands description",
         "add": "Add new contact",
         "change": "Edit contact",
         "remove": "Remove the contact",
         "find": "Find contact by selected criteria",
-        "all": "Display all contacts",
+        "all": "Display all contacts/notes(contacts by default)",
         "birthdays": "Display contacts who have birthday next week and date when you have to condratulate them",
         "add_note": "Add new note",
         "remove_note": "Remove dedicated note",
@@ -418,12 +417,11 @@ class ConsoleBot:
                 command, args = CommandPrompt().prompt()
                 command = command.strip().lower()
 
-                try:
-                    index = self.__commands.index(command)
-                    self.__commands[index](args)
-                except ValueError:
-                    ConsoleOutput().print_error("Error: Invalid command")
+                index = self.__commands.index(command)
+                self.__commands[index](args)
 
+            except ValueError:
+                ConsoleOutput().print_error("Error: Invalid command")
             except Exception as err:
                 ConsoleOutput().print_error(f"Error: {err}")
 

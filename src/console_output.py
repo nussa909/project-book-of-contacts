@@ -21,16 +21,19 @@ class ConsoleOutput:
 
     def print_map(self, titles, map: dict):
         table = Table()
+        if map:
+            title1, title2 = titles
+            table.add_column(title1, style="blue",
+                             justify="right", no_wrap=True)
+            table.add_column(title2, style="green", no_wrap=True)
 
-        title1, title2 = titles
-        table.add_column(title1, style="blue",
-                         justify="right", no_wrap=True)
-        table.add_column(title2, style="green", no_wrap=True)
+            for key, value in map.items():
+                table.add_row(str(key), str(value))
 
-        for key, value in map.items():
-            table.add_row(str(key), str(value))
-
-        self.__console.print(table)
+            self.__console.print(table)
+        else:
+            self.__print_str(
+                "No items to display", style="bold blue")
 
     def print_object_list(self, data: list):
         table = Table(show_lines=True)
@@ -44,7 +47,10 @@ class ConsoleOutput:
                 args = [str(item) for item in row.values()]
                 table.add_row(*args)
 
-        self.__console.print(table)
+            self.__console.print(table)
+        else:
+            self.__print_str(
+                "No items to display", style="bold blue")
 
     def print_msg(self, msg):
         self.__print_str(msg, style="bold green")
