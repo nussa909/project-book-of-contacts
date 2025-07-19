@@ -1,6 +1,5 @@
 import pickle
 
-
 class SerializedObject:
     def __init__(self, filename, object):
         self.__filename = filename

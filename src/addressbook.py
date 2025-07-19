@@ -107,7 +107,7 @@ class Record:
         self.address = None
         self.email = None
         self.birthday = None
-
+    
     # phone have to be unique, so we check if it is already added
     def add_phone(self, phone: str)-> bool:
         if not self.__is_phone_added(phone):
@@ -189,42 +189,8 @@ class Record:
         return str(self)
 
 class AddressBook(UserDict):
-    def __init__(self,  autosave_interval_minutes=1):
+    def __init__(self,):
         super().__init__()
-        self.__autosave_interval_minutes = autosave_interval_minutes # interval for autosaving
-        self.__last_autosave_time = datetime.now() # time of the last autosave
-
-    def check_autosave(self):
-        """
-        Checks if it's time for autosaving.
-        Returns False if __autosave_interval_minutes is 0.
-        """
-        if self.__autosave_interval_minutes == 0: 
-            return False # disable autosave if interval is 0
-
-        required_interval = timedelta(minutes=self.__autosave_interval_minutes) 
-        return datetime.now() - self.__last_autosave_time >= required_interval 
-
-    def autosave(self, save_function):
-        """
-        Autosaves the address book if the time interval has passed.
-        Args:
-            save_function: a function that takes the address book and filename as arguments and returns True if successful.
-        Returns:
-            True if autosave was successful, False otherwise.
-        """
-        if self.check_autosave():
-            try:
-                #success = save_function(self, self.__autosave_filename) 
-                success = save_function(self)
-                if success:
-                    self.__last_autosave_time = datetime.now() 
-                    return True
-                else:
-                    return False
-            except Exception as e:
-                return False
-        return False
 
     def get_all_contacts(self):
         return [contact for _, contact in self.data.items()]
