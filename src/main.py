@@ -200,13 +200,12 @@ def birthdays(kwards, book):
 @error_handler
 def show_help(kwards=None, _=None):
     command_map = {
-        "hello": "Greet the user",
         "help": "Show commands description",
         "add": "Add new contact",
         "change": "Edit contact",
         "remove": "Remove the contact",
         "find": "Find contact by selected criteria",
-        "all": "Display all contacts",
+        "all": "Display all contacts/notes(contacts by default)",
         "birthdays": "Display contacts who have birthday next week and date when you have to condratulate them",
         "add_note": "Add new note",
         "remove_note": "Remove dedicated note",
@@ -353,26 +352,65 @@ def say_bye(kwards, bot):
 
 
 class Command:
+    """
+    Represents a command for the console bot.
+
+    Properties:
+        command (str): The command name.
+        func (callable): The function to execute for this command.
+        receiver (object): The object or data to operate on.
+    """
 
     def __init__(self, command, func, receiver):
-        self.command = command.value
-        self.func = func
-        self.receiver = receiver
+        """
+        Initialize the Command object.
+
+        :param command: Command enum value.
+        :param func: Function to execute.
+        :param receiver: Data or object to operate on.
+        """
+        self.command = command.value  # Command name as string
+        self.func = func              # Function to execute
+        self.receiver = receiver      # Data or object to operate on
 
     def __eq__(self, command):
+        """
+        Compare the command with a string.
+
+        :param command: Command string to compare.
+        :return: True if equal, False otherwise.
+        """
         return self.command == command
 
     def __call__(self, args):
+        """
+        Call the command's function with arguments.
+
+        :param args: Arguments for the function.
+        :return: Result of the function call.
+        """
         return self.func(args, self.receiver)
 
 
 class ConsoleBot:
-    """Console bot for managing contacts and notes."""
+    """
+    Console bot for managing contacts and notes.
+
+    Properties:
+        __book (SerializedObject): Serialized address book.
+        __notes (SerializedObject): Serialized notebook.
+        __commands (list): List of Command objects.
+        __is_running (bool): Bot running state.
+    """
 
     def __init__(self):
-        """Initialize the console bot with commands and data."""
-        self.__book = SerializedObject("addressbook.pkl", AddressBook())
-        self.__notes = SerializedObject("notebook.pkl", Notebook())
+        """
+        Initialize the console bot with commands and data.
+        """
+        self.__book = SerializedObject(
+            "addressbook.pkl", AddressBook())  # Address book storage
+        self.__notes = SerializedObject(
+            "notebook.pkl", Notebook())       # Notebook storage
         self.__commands = [Command(ECommand.HELP, show_help, self.__book.object),
                            Command(ECommand.ADD, add_contact,
                                    self.__book.object),
@@ -390,40 +428,40 @@ class ConsoleBot:
                                    self.__book.object),
                            Command(ECommand.ADD_NOTE, add_note,
                                    self.__notes.object),
-                           Command(ECommand.REMOVE_NOTE, remove_note,
-                                   self.__notes.object),
-                           Command(ECommand.CHANGE_NOTE, change_note,
-                                   self.__notes.object),
+                           Command(ECommand.REMOVE_NOTE,
+                                   remove_note, self.__notes.object),
+                           Command(ECommand.CHANGE_NOTE,
+                                   change_note, self.__notes.object),
                            Command(ECommand.FIND_NOTES, find_notes,
                                    self.__notes.object),
                            Command(ECommand.ADD_TAGS, add_tag,
                                    self.__notes.object),
-                           Command(ECommand.REMOVE_TAGS, remove_tag,
-                                   self.__notes.object),
+                           Command(ECommand.REMOVE_TAGS,
+                                   remove_tag, self.__notes.object),
                            Command(ECommand.SHOW_NOTES, show_notes,
                                    self.__notes.object),
                            Command(ECommand.CLOSE, say_bye, self),
                            Command(ECommand.EXIT, say_bye, self)]
-        self.__is_running = False
+        self.__is_running = False  # Bot running state
 
     def start(self):
+        """
+        Start the console bot main loop.
+        Clears the console, prints welcome message and help, and processes user commands.
+        """
         ConsoleOutput().clear()
         ConsoleOutput().print_msg("Welcome to the assistant bot!")
         show_help()
-        """Start the console bot."""
         self.__is_running = True
         while self.__is_running:
             try:
-
                 command, args = CommandPrompt().prompt()
                 command = command.strip().lower()
 
-                try:
-                    index = self.__commands.index(command)
-                    self.__commands[index](args)
-                except ValueError:
-                    ConsoleOutput().print_error("Error: Invalid command")
-
+                index = self.__commands.index(command)
+                self.__commands[index](args)
+            except ValueError:
+                ConsoleOutput().print_error("Error: Invalid command")
             except Exception as err:
                 ConsoleOutput().print_error(f"Error: {err}")
 
@@ -431,6 +469,9 @@ class ConsoleBot:
         self.__notes.save_data()
 
     def stop(self):
+        """
+        Stop the console bot loop.
+        """
         self.__is_running = False
 
 
