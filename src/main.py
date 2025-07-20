@@ -3,7 +3,7 @@ from notebook import Notebook, Note
 from file_serializer import SerializedObject
 from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
-from console_prompt import CommandPrompt, ContactKeys 
+from console_prompt import CommandPrompt, ContactKeys
 from console_output import ConsoleOutput
 
 
@@ -186,12 +186,13 @@ def show_details(kwards, book: AddressBook) -> None:
     if not name:
         raise InputError("show - no name of contact was entered")
     if filter not in [ContactKeys.PHONE.value, ContactKeys.EMAIL.value, ContactKeys.ADDRESS.value, ContactKeys.BIRTHDAY.value]:
-        raise InputError(f"show - invalid filter '{filter}' provided. Valid filters are: phone, email, address, birthday")
+        raise InputError(
+            f"show - invalid filter '{filter}' provided. Valid filters are: phone, email, address, birthday")
     record = book.find(name)
     if record is None:
         raise InputError(f"show - contact '{name}' not found")
     messgae = ""
-    data={}
+    data = {}
     match filter:
         case ContactKeys.PHONE.value:
             phones = record.phones
@@ -200,7 +201,7 @@ def show_details(kwards, book: AddressBook) -> None:
             else:
                 for idx, phone in enumerate(record.phones, start=1):
                     data[f"Phone #{idx}"] = phone
-                #messgae = f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
+                # messgae = f"Phones for {record.name}: {', '.join(p.value for p in phones)}"
         case ContactKeys.EMAIL.value:
             email = record.email
             if not email:
@@ -265,6 +266,7 @@ def birthdays(kwards, book: AddressBook) -> None:
     ConsoleOutput().print_msg(f"People to congratulate next {days} days:")
     ConsoleOutput().print_map(("Name", "Birthday"), book.get_upcoming_birthdays(days))
 
+
 @error_handler
 def show_help(kwards=None, _=None):
     '''
@@ -277,13 +279,12 @@ def show_help(kwards=None, _=None):
         None: This function does not raise any exceptions.
     '''
     command_map = {
-        "hello": "Greet the user",
         "help": "Show commands description",
         "add": "Add new contact",
         "change": "Edit contact",
         "remove": "Remove the contact",
         "find": "Find contact by selected criteria",
-        "all": "Display all contacts",
+        "all": "Display all contacts/notes(contacts by default)",
         "birthdays": "Display contacts who have birthday next week and date when you have to condratulate them",
         "add_note": "Add new note",
         "remove_note": "Remove dedicated note",
@@ -494,30 +495,56 @@ def say_bye(kwards, bot):
 
 
 class Command:
-    '''
-    Command class for managing console commands.
-    This class encapsulates a command, its associated function, and the receiver object.
-    It allows for easy execution of commands with the provided arguments.
-    '''
+    """
+    Represents a command for the console bot.
+
+    Properties:
+        command (str): The command name.
+        func (callable): The function to execute for this command.
+        receiver (object): The object or data to operate on.
+    """
 
     def __init__(self, command, func, receiver):
-        self.command = command.value
-        self.func = func
-        self.receiver = receiver
+        """
+        Initialize the Command object.
+
+        :param command: Command enum value.
+        :param func: Function to execute.
+        :param receiver: Data or object to operate on.
+        """
+        self.command = command.value  # Command name as string
+        self.func = func              # Function to execute
+        self.receiver = receiver      # Data or object to operate on
 
     def __eq__(self, command):
+        """
+        Compare the command with a string.
+
+        :param command: Command string to compare.
+        :return: True if equal, False otherwise.
+        """
         return self.command == command
 
     def __call__(self, args):
+        """
+        Call the command's function with arguments.
+
+        :param args: Arguments for the function.
+        :return: Result of the function call.
+        """
         return self.func(args, self.receiver)
 
 class ConsoleBot:
-    '''
-    ConsoleBot class for managing the console-based assistant bot.
-    This class initializes the bot with commands and data, and provides methods to start and stop the bot.
-    It handles user input, executes commands, and manages the address book and notebook data.
-    It also provides error handling for invalid commands and input.
-    '''
+    """
+    Console bot for managing contacts and notes.
+
+    Properties:
+        __book (SerializedObject): Serialized address book.
+        __notes (SerializedObject): Serialized notebook.
+        __commands (list): List of Command objects.
+        __is_running (bool): Bot running state.
+    """
+
     def __init__(self):
         """
         Initialize the console bot with commands and data.
@@ -543,21 +570,21 @@ class ConsoleBot:
                                    self.__book.object),
                            Command(ECommand.ADD_NOTE, add_note,
                                    self.__notes.object),
-                           Command(ECommand.REMOVE_NOTE, remove_note,
-                                   self.__notes.object),
-                           Command(ECommand.CHANGE_NOTE, change_note,
-                                   self.__notes.object),
+                           Command(ECommand.REMOVE_NOTE,
+                                   remove_note, self.__notes.object),
+                           Command(ECommand.CHANGE_NOTE,
+                                   change_note, self.__notes.object),
                            Command(ECommand.FIND_NOTES, find_notes,
                                    self.__notes.object),
                            Command(ECommand.ADD_TAGS, add_tag,
                                    self.__notes.object),
-                           Command(ECommand.REMOVE_TAGS, remove_tag,
-                                   self.__notes.object),
+                           Command(ECommand.REMOVE_TAGS,
+                                   remove_tag, self.__notes.object),
                            Command(ECommand.SHOW_NOTES, show_notes,
                                    self.__notes.object),
                            Command(ECommand.CLOSE, say_bye, self),
                            Command(ECommand.EXIT, say_bye, self)]
-        self.__is_running = False
+        self.__is_running = False  # Bot running state
 
     def start(self):
         '''
@@ -574,20 +601,13 @@ class ConsoleBot:
         self.__is_running = True
         while self.__is_running:
             try:
-
                 command, args = CommandPrompt().prompt()
                 command = command.strip().lower()
 
-                try:
-                    index = self.__commands.index(command)
-                    self.__commands[index](args)
-                except ValueError:
-                    ConsoleOutput().print_error("Error: Invalid command")
-
-                if self.__is_running:
-                    CommandPrompt().dump_prompt()
-                    ConsoleOutput().clear()
-
+                index = self.__commands.index(command)
+                self.__commands[index](args)
+            except ValueError:
+                ConsoleOutput().print_error("Error: Invalid command")
             except Exception as err:
                 ConsoleOutput().print_error(f"Error: {err}")
 
@@ -595,6 +615,9 @@ class ConsoleBot:
         self.__notes.save_data()
 
     def stop(self):
+        """
+        Stop the console bot loop.
+        """
         self.__is_running = False
 
 
