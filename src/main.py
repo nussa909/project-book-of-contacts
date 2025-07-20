@@ -9,8 +9,18 @@ from console_output import ConsoleOutput
 
 ############################ bot's commands #########################################
 @error_handler
-def add_contact(kwards, book):
-    # add -name Joe Dow -phone 01233456789 -email joeDow@gmail.com -address Kyiv, Some St 45 -birthday 12.04.2000
+def add_contact(kwards, book: AddressBook) -> None:
+    ''' 
+    Add a new contact to the address book.
+    The function takes keyword arguments for contact details and adds or updates the contact in the book.
+    If the contact already exists, it updates the details.
+
+    Args:
+        kwards (dict): The keyword arguments containing contact details.
+        book (AddressBook): The address book instance. 
+    Raises:
+        InputError: If the contact details are invalid. 
+    '''
     name = kwards.get("name")
     phone = kwards.get("phone")
     email = kwards.get("email")
@@ -50,10 +60,18 @@ def add_contact(kwards, book):
 
     ConsoleOutput().print_msg(message)
 
-
 @error_handler
-def change_contact(kwards, book):
-    # change -phone -name Joe Dow -old 0123456789 -new 9876543210
+def change_contact(kwards, book: AddressBook) -> None:
+    '''
+    Change an existing contact in the address book.
+    The function takes keyword arguments for contact details and updates the contact in the book.
+
+    Args:
+        kwards (dict): The keyword arguments containing contact details.
+        book (AddressBook): The address book instance.
+    Raises:
+        InputError: If the contact details are invalid.
+    '''
     name = kwards.get("name")
     old_phone = kwards.get("old_phone")
     new_phone = kwards.get("new_phone")
@@ -93,19 +111,36 @@ def change_contact(kwards, book):
 
     ConsoleOutput().print_msg("Contact updated")
 
-
 @error_handler
-def remove_contact(kwards, book):
+def remove_contact(kwards, book: AddressBook) -> None:
+    '''
+    Remove a contact from the address book.
+    The function takes keyword arguments for contact details and removes the contact from the book.
+
+    Args:
+        kwards (dict): The keyword arguments containing contact details.
+        book (AddressBook): The address book instance.
+    Raises:
+        InputError: If the contact details are invalid.
+    '''
     name = kwards.get("name")
     if not name:
         raise InputError("remove - no name of contact was entered")
     book.remove(name)
-    ConsoleOutput().print_msg(
-        f"Contact '{name}' removed" or f"Contact '{name}' not found")
-
+    ConsoleOutput().print_msg(f"Contact '{name}' removed" or f"Contact '{name}' not found")
 
 @error_handler
-def find_contact(kwards, book):
+def find_contact(kwards, book: AddressBook) -> None:
+    '''
+    Find a contact in the address book.
+    The function takes keyword arguments for contact details and searches for the contact in the book.
+
+    Args:
+        kwards (dict): The keyword arguments containing contact details.
+        book (AddressBook): The address book instance.
+    Raises:
+        InputError: If the contact details are invalid.
+    '''
     name = kwards.get("name")
     phone = kwards.get("phone")
     email = kwards.get("email")
@@ -126,11 +161,26 @@ def find_contact(kwards, book):
     if birthday:
         res = book.find_records(birthday, 'birthday')
 
-    ConsoleOutput().print_object_list(res)
-
+    if not res:
+        k = next(iter(kwards))
+        ConsoleOutput().print_msg(f"Contact not found for criteria: {k} = {kwards[k]}")
+    else:
+        ConsoleOutput().print_object_list(res)
 
 @error_handler
-def show_details(kwards, book):
+def show_details(kwards, book: AddressBook) -> None:
+    '''
+    Show details of a specific contact in the address book.
+    The function takes keyword arguments for contact details and displays the requested information.
+    The filter can be one of the following: phone, email, address, birthday.
+    If the contact does not exist or the filter is invalid, an error is raised.
+
+    Args:
+        kwards (dict): The keyword arguments containing contact details.
+        book (AddressBook): The address book instance.
+    Raises:
+        InputError: If the contact details are invalid.
+    '''
     name = kwards.get("name")
     filter = kwards.get("filter")
     if not name:
@@ -175,17 +225,37 @@ def show_details(kwards, book):
     else:
         ConsoleOutput().print_map_with_title('', data)
 
-
 @error_handler
-def show_all_contacts(kwards, books):
+def show_all_contacts(kwards, books: list[AddressBook])-> None:
+    '''
+     Show all contacts or notes in the address book or notebook. 
+     The function takes keyword arguments to determine whether to show contacts or notes.
+        If "notes" is in the keyword arguments, it shows notes from the notebook.
+        If "contacts" is in the keyword arguments, it shows contacts from the address book.
+        If neither is specified, it defaults to showing contacts.
+
+     Args:
+         kwards (dict): The keyword arguments containing the request details.
+         books (list[AddressBook]): The list of address books and notebooks.
+     Raises:
+         InputError: If the request details are invalid.
+    '''
     if "notes" in kwards:
         ConsoleOutput().print_object_list(books[1].get_notes())
     else:
         ConsoleOutput().print_object_list(books[0].get_all_contacts())
 
-
 @error_handler
-def birthdays(kwards, book):
+def birthdays(kwards, book: AddressBook) -> None:
+    '''
+    Show upcoming birthdays for the specified number of days.
+    The function takes keyword arguments to determine how many days ahead to check for upcoming birthdays.
+    Args:
+        kwards (dict): The keyword arguments containing the request details.
+        book (AddressBook): The address book instance.
+    Raises:
+        InputError: If the request details are invalid.
+    '''
     days = kwards.get("days", 7)
     try:
         days = int(days)
@@ -199,6 +269,15 @@ def birthdays(kwards, book):
 
 @error_handler
 def show_help(kwards=None, _=None):
+    '''
+    Show help information about available commands.
+    This function prints a list of commands and their descriptions to the console.
+    Args:
+        kwards (dict): The keyword arguments containing the request details.
+        _ (NoneType): Placeholder for future use.
+    Raises:
+        None: This function does not raise any exceptions.
+    '''
     command_map = {
         "help": "Show commands description",
         "add": "Add new contact",
@@ -218,10 +297,19 @@ def show_help(kwards=None, _=None):
     }
     ConsoleOutput().print_map(("Command", "Description"), command_map)
 
-
 @error_handler
-def add_note(kwards, notebook):
-    # add_note -title headline -text Note message -tags #tag1,#tag2
+def add_note(kwards, notebook: Notebook) -> None:
+    '''
+    Add a new note to the notebook.
+    The function takes keyword arguments for note details and adds the note to the notebook.
+    If the note already exists, it updates the details.
+
+    Args:
+        kwards (dict): The keyword arguments containing note details.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the note details are invalid.
+    '''
     title = kwards.get("title")
     text = kwards.get("text")
     tags_str = kwards.get("tags")
@@ -240,10 +328,20 @@ def add_note(kwards, notebook):
 
     ConsoleOutput().print_msg("Note added")
 
-
 @error_handler
-def change_note(kwards, notebook):
-    # change_note -id note_id -title new title -text new text
+def change_note(kwards, notebook: Notebook) -> None:
+    '''
+    Change an existing note in the notebook.
+    The function takes keyword arguments for note identification and new details.
+    If the note exists, it updates the details; otherwise, it raises an error.
+    If no identification or new details are provided, it raises an error.
+
+    Args:
+        kwards (dict): The keyword arguments containing note identification and new details.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the note identification or new details are invalid.
+    '''
     id = int(kwards.get("id"))
     new_title = kwards.get("title")
     new_text = kwards.get("text")
@@ -264,10 +362,19 @@ def change_note(kwards, notebook):
 
     ConsoleOutput().print_msg(message)
 
-
 @error_handler
-def remove_note(kwards, notebook):
-    # remove_note -id note_id
+def remove_note(kwards, notebook: Notebook) -> None:
+    '''
+    Remove an existing note from the notebook.
+    The function takes keyword arguments for note identification.
+    If the note exists, it removes it; otherwise, it raises an error.
+
+    Args:
+        kwards (dict): The keyword arguments containing note identification.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the note identification is invalid.
+    '''
     id = int(kwards.get("id"))
 
     if not id:
@@ -282,11 +389,19 @@ def remove_note(kwards, notebook):
 
     ConsoleOutput().print_msg(message)
 
-
 @error_handler
-def add_tag(kwards, notebook):
-    # add_tag -id note_id -tag #tag
+def add_tag(kwards, notebook: Notebook) -> None:
+    '''
+    Add a tag to an existing note in the notebook.
+    The function takes keyword arguments for note identification and tag details.
+    If the note exists, it adds the tag; otherwise, it raises an error.
 
+    Args:
+        kwards (dict): The keyword arguments containing note identification and tag details.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the note identification or tag details are invalid.
+    '''
     id = int(kwards.get("id"))
     tag = kwards.get("tag")
 
@@ -302,10 +417,19 @@ def add_tag(kwards, notebook):
 
     ConsoleOutput().print_msg(message)
 
-
 @error_handler
-def remove_tag(kwards, notebook):
-    # remove_tag id_note -tag #tag
+def remove_tag(kwards, notebook: Notebook) -> None:
+    '''
+    Remove a tag from an existing note in the notebook.
+    The function takes keyword arguments for note identification and tag details.
+    If the note exists, it removes the tag; otherwise, it raises an error.
+
+    Args:
+        kwards (dict): The keyword arguments containing note identification and tag details.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the note identification or tag details are invalid.
+    '''
     id = int(kwards.get("id"))
     tag = kwards.get("tag")
 
@@ -321,18 +445,38 @@ def remove_tag(kwards, notebook):
 
     ConsoleOutput().print_msg(message)
 
-
 @error_handler
-def show_notes(kwards, notebook):
+def show_notes(kwards, notebook: Notebook) -> None :
+    '''
+    Show all notes in the notebook.
+    The function retrieves all notes from the notebook and prints them to the console.
+    It sorts the notes by tags and ID for better readability.
+    If there are no notes, it prints an empty list.
+
+    Args:
+        kwards (dict): The keyword arguments containing the request details.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        None: This function does not raise any exceptions.
+    '''
     notes = notebook.get_notes()
     ConsoleOutput().print_object_list(sorted(notes, key=lambda note: (
         ", ".join(sorted(list(note.tags))) if note.tags else "",
         note.id)))
 
-
 @error_handler
-def find_notes(kwards, notebook):
-    # find_notes -tags #tag1,#tag2
+def find_notes(kwards, notebook: Notebook) -> None :
+    '''
+    Find notes by tags in the notebook.
+    The function takes keyword arguments for tags and searches for notes that match the specified tags.
+    If the tags are not provided, it raises an error.
+    Args:
+        kwards (dict): The keyword arguments containing the tags to search for.
+        notebook (Notebook): The notebook instance.
+    Raises:
+        InputError: If the tags are not provided or are invalid.
+    '''
+
     tags_str = kwards.get("tags")
 
     tags = {}
@@ -342,7 +486,6 @@ def find_notes(kwards, notebook):
 
     res = notebook.find_note_by_tags(tags)
     ConsoleOutput().print_object_list(sorted(res))
-
 
 @error_handler
 def say_bye(kwards, bot):
@@ -391,7 +534,6 @@ class Command:
         """
         return self.func(args, self.receiver)
 
-
 class ConsoleBot:
     """
     Console bot for managing contacts and notes.
@@ -406,11 +548,11 @@ class ConsoleBot:
     def __init__(self):
         """
         Initialize the console bot with commands and data.
+        This constructor sets up the address book and notebook, and initializes the commands list.
+        It also sets the running state of the bot to False.
         """
-        self.__book = SerializedObject(
-            "addressbook.pkl", AddressBook())  # Address book storage
-        self.__notes = SerializedObject(
-            "notebook.pkl", Notebook())       # Notebook storage
+        self.__book = SerializedObject("addressbook.pkl", AddressBook())
+        self.__notes = SerializedObject("notebook.pkl", Notebook())
         self.__commands = [Command(ECommand.HELP, show_help, self.__book.object),
                            Command(ECommand.ADD, add_contact,
                                    self.__book.object),
@@ -445,13 +587,17 @@ class ConsoleBot:
         self.__is_running = False  # Bot running state
 
     def start(self):
-        """
-        Start the console bot main loop.
-        Clears the console, prints welcome message and help, and processes user commands.
-        """
+        '''
+        Start the console bot.
+        This method initializes the console output, prints a welcome message, and shows the help information.
+        It enters a loop to prompt the user for commands, executes the commands, and handles errors
+        until the bot is stopped.
+        It saves the address book and notebook data before exiting.
+        '''
         ConsoleOutput().clear()
         ConsoleOutput().print_msg("Welcome to the assistant bot!")
         show_help()
+        # Start the console bot.
         self.__is_running = True
         while self.__is_running:
             try:
