@@ -5,6 +5,7 @@ from exceptions import error_handler, InputError
 from console_prompt import Command as ECommand
 from console_prompt import CommandPrompt, ContactKeys
 from console_output import ConsoleOutput
+from console_prompt import command_descriptions
 
 
 ############################ bot's commands #########################################
@@ -278,24 +279,7 @@ def show_help(kwards=None, _=None):
     Raises:
         None: This function does not raise any exceptions.
     '''
-    command_map = {
-        "help": "Show commands description",
-        "add": "Add new contact",
-        "change": "Edit contact",
-        "remove": "Remove the contact",
-        "find": "Find contact by selected criteria",
-        "all": "Display all contacts/notes(contacts by default)",
-        "birthdays": "Display contacts who have birthday next week and date when you have to condratulate them",
-        "add_note": "Add new note",
-        "remove_note": "Remove dedicated note",
-        "change_note": "Edit dedicated note",
-        "find_note": "Find notes by selected criteria",
-        "add_tag": "Add tag to selected note",
-        "remove_tag": "Remove tag from selected note",
-        "show_notes": "Display notes sorted by tags",
-        "exit/close": "Exit the application"
-    }
-    ConsoleOutput().print_map(("Command", "Description"), command_map)
+    ConsoleOutput().print_map(("Command", "Description"), command_descriptions)
 
 @error_handler
 def add_note(kwards, notebook: Notebook) -> None:

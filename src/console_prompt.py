@@ -3,9 +3,29 @@ from prompt_toolkit.completion import Completer, Completion, DummyCompleter
 from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.key_binding import KeyBindings
 from enum import Enum
 from exceptions import InputError
 
+command_descriptions = {
+    "help":        "Show commands description",
+    "add":         "Add new contact",
+    "change":      "Edit contact",
+    "remove":      "Remove the contact",
+    "find":        "Find contact by selected criteria (use % and _ as wildcards)",
+    "show":        "Show detailed contact info",
+    "all":         "Display all contacts/notes(contacts by default)",
+    "birthdays":   "Show upcoming birthdays next input days (default 7)",
+    "add_note":    "Add new note",
+    "remove_note": "Remove dedicated note",
+    "change_note": "Edit dedicated note",
+    "find_notes":  "Find notes by selected criteria",
+    "add_tags":    "Add tag to selected note",
+    "remove_tags": "Remove tag from selected note",
+    "show_notes":  "Display notes sorted by tags",
+    "exit":        "Exit the application",
+    "close":       "Exit the application",
+}
 
 class Command(Enum):
     """
@@ -60,12 +80,13 @@ class FirstWordCompleter(Completer):
     Custom completer that suggests completions for the first word in the prompt.
     """
 
-    def __init__(self, words):
+    def __init__(self, words: list, command_descr: dict = None):
         """
         Initialize with a list of words for completion.
         :param words: List of words to complete.
         """
         self.words = words
+        self.command_descr = command_descr or {}
 
     def get_completions(self, document, complete_event):
         """
@@ -79,7 +100,7 @@ class FirstWordCompleter(Completer):
         current_word = document.get_word_before_cursor()
         for word in self.words:
             if word.startswith(current_word):
-                yield Completion(word, start_position=-len(current_word))
+                yield Completion(word, start_position=-len(current_word),  display_meta=self.command_descr.get(word, ""))
 
 
 style = Style.from_dict({
@@ -460,10 +481,25 @@ class CommandPrompt:
         :return: Tuple of command and parameters dictionary.
         """
         command_completer = FirstWordCompleter(
-            [command.value for command in Command])
+            [command.value for command in Command], command_descriptions)
+        
+        kb = KeyBindings()
+        @kb.add('enter')
+        def _(event):
+            buf = event.current_buffer
+            # check if the buffer is not empty
+            if not buf.text.strip(): 
+                event.app.exit(result=buf.text)
+                return 
+            if buf.complete_state and buf.complete_state.current_completion:
+                buf.apply_completion(buf.complete_state.current_completion)
+                event.app.exit(result=buf.text)     
+            else:
+                buf.complete_next()
+                event.app.exit(result=buf.text)
 
         cmd = self.session.prompt(
-            "Enter command:", completer=command_completer)
+            "Enter command:", completer=command_completer, key_bindings=kb,complete_while_typing=True)
 
         params = {}
         if cmd:
