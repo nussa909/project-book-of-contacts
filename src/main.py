@@ -127,8 +127,10 @@ def remove_contact(kwards, book: AddressBook) -> None:
     name = kwards.get("name")
     if not name:
         raise InputError("remove - no name of contact was entered")
-    book.remove(name)
-    ConsoleOutput().print_msg(f"Contact '{name}' removed" or f"Contact '{name}' not found")
+    if book.remove(name):
+        ConsoleOutput().print_msg(f"Contact '{name}' removed")
+    else:
+        ConsoleOutput().print_msg(f"Contact '{name}' not found")
 
 @error_handler
 def find_contact(kwards, book: AddressBook) -> None:
