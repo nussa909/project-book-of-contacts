@@ -521,13 +521,24 @@ class CommandPrompt:
             # check if the buffer is not empty
             if not buf.text.strip():
                 event.app.exit(result=buf.text)
-                return
+                return 
+
             if buf.complete_state and buf.complete_state.current_completion:
                 buf.apply_completion(buf.complete_state.current_completion)
                 event.app.exit(result=buf.text)
             else:
                 buf.complete_next()
+                event.current_buffer.validate_and_handle()
+
+            '''
+            completions = getattr(buf.complete_state, 'completions', None)
+            if completions:
+                first = completions[0]
+                buf.apply_completion(first)
                 event.app.exit(result=buf.text)
+                return
+            buf.validate_and_handle()
+            '''
 
         cmd = self.session.prompt(
             "Enter command:", completer=command_completer, key_bindings=kb, complete_while_typing=True)
