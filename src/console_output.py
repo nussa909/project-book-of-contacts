@@ -9,6 +9,7 @@ class ConsoleOutput:
     Provides methods for printing tables, messages, errors, and clearing the console.
     """
     __instance = None
+    __console = None
 
     def __new__(cls):
         """
@@ -16,13 +17,14 @@ class ConsoleOutput:
         """
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
+            cls.__console = Console()
         return cls.__instance
 
     def __init__(self):
         """
         Initialize the ConsoleOutput instance with a Rich Console object.
         """
-        self.__console = Console()
+        self.__console = ConsoleOutput.__console
 
     def __print_str(self, msg, style):
         """
@@ -71,7 +73,12 @@ class ConsoleOutput:
                                  style="blue", no_wrap=True)
 
             for row in data_dct:
-                args = [str(item) for item in row.values()]
+                args = []
+                for item in row.values():
+                    if isinstance(item, set) and not item:
+                        args.append("{}")
+                    else:
+                        args.append(str(item))
                 table.add_row(*args)
 
             self.__console.print(table)

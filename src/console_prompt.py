@@ -23,9 +23,10 @@ command_descriptions = {
     "add_tags":    "Add tag to selected note",
     "remove_tags": "Remove tag from selected note",
     "show_notes":  "Display notes sorted by tags",
-    "exit":        "Exit the application",
-    "close":       "Exit the application",
+    "exit":        "Save&Exit the application",
+    "close":       "Save&Exit the application",
 }
+
 
 class Command(Enum):
     """
@@ -372,11 +373,28 @@ class ChangeNoteBuilder(NoteBuilder):
     Builder for changing note properties.
     """
 
+    def get_old_tag(self):
+        """Prompt for a single old tag."""
+        self.get_property("old tag:", "old_tag")
+
+    def get_new_tag(self):
+        """Prompt for a single new tag."""
+        self.get_property("new tag:", "new_tag")
+
     def build(self):
         """Collect properties for changing a note."""
         self.get_id()
-        self.get_title()
-        self.get_text()
+        property = self.what("what are you gonna change:", [
+                             NoteKeys.TITLE.value, NoteKeys.TEXT.value, NoteKeys.TAG.value])
+        match property:
+            case NoteKeys.TITLE.value:
+                self.get_title()
+            case NoteKeys.TEXT.value:
+                self.get_text()
+            case NoteKeys.TAG.value:
+                self.get_old_tag()
+                self.get_new_tag()
+
         return self.result
 
 
@@ -417,12 +435,24 @@ class RemoveTagBuilder(NoteBuilder):
 
 class FindNotesBuilder(NoteBuilder):
     """
-    Builder for finding notes by tags.
+    Builder for finding notes by different criteria.
     """
 
     def build(self):
-        """Prompt for tags to search notes."""
-        self.get_tags()
+
+        find_criteria = self.what(
+            "find criteria:", [NoteKeys.ID.value, NoteKeys.TITLE.value, NoteKeys.TEXT.value, NoteKeys.TAGS.value])
+        match find_criteria:
+            case NoteKeys.ID.value:
+                self.get_id()
+            case NoteKeys.TITLE.value:
+                self.get_title()
+            case NoteKeys.TEXT.value:
+                self.get_text()
+            case NoteKeys.TAGS.value:
+                self.get_tags()
+            case _:
+                raise InputError("Invalid input")
         return self.result
 
 
@@ -482,19 +512,20 @@ class CommandPrompt:
         """
         command_completer = FirstWordCompleter(
             [command.value for command in Command], command_descriptions)
-        
+
         kb = KeyBindings()
+
         @kb.add('enter')
         def _(event):
             buf = event.current_buffer
             # check if the buffer is not empty
-            if not buf.text.strip(): 
+            if not buf.text.strip():
                 event.app.exit(result=buf.text)
                 return 
 
             if buf.complete_state and buf.complete_state.current_completion:
                 buf.apply_completion(buf.complete_state.current_completion)
-                event.app.exit(result=buf.text)     
+                event.app.exit(result=buf.text)
             else:
                 buf.complete_next()
                 event.current_buffer.validate_and_handle()
@@ -510,7 +541,7 @@ class CommandPrompt:
             '''
 
         cmd = self.session.prompt(
-            "Enter command:", completer=command_completer, key_bindings=kb,complete_while_typing=True)
+            "Enter command:", completer=command_completer, key_bindings=kb, complete_while_typing=True)
 
         params = {}
         if cmd:

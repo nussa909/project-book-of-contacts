@@ -61,6 +61,7 @@ def add_contact(kwards, book: AddressBook) -> None:
 
     ConsoleOutput().print_msg(message)
 
+
 @error_handler
 def change_contact(kwards, book: AddressBook) -> None:
     '''
@@ -111,6 +112,7 @@ def change_contact(kwards, book: AddressBook) -> None:
         record.change_birthday(birthday)
 
     ConsoleOutput().print_msg("Contact updated")
+
 
 @error_handler
 def remove_contact(kwards, book: AddressBook) -> None:
@@ -166,9 +168,11 @@ def find_contact(kwards, book: AddressBook) -> None:
 
     if not res:
         k = next(iter(kwards))
-        ConsoleOutput().print_msg(f"Contact not found for criteria: {k} = {kwards[k]}")
+        ConsoleOutput().print_msg(
+            f"Contact not found for criteria: {k} = {kwards[k]}")
     else:
         ConsoleOutput().print_object_list(res)
+
 
 @error_handler
 def show_details(kwards, book: AddressBook) -> None:
@@ -228,8 +232,9 @@ def show_details(kwards, book: AddressBook) -> None:
     else:
         ConsoleOutput().print_map_with_title('', data)
 
+
 @error_handler
-def show_all_contacts(kwards, books: list[AddressBook])-> None:
+def show_all_contacts(kwards, books: list[AddressBook]) -> None:
     '''
      Show all contacts or notes in the address book or notebook. 
      The function takes keyword arguments to determine whether to show contacts or notes.
@@ -247,6 +252,7 @@ def show_all_contacts(kwards, books: list[AddressBook])-> None:
         ConsoleOutput().print_object_list(books[1].get_notes())
     else:
         ConsoleOutput().print_object_list(books[0].get_all_contacts())
+
 
 @error_handler
 def birthdays(kwards, book: AddressBook) -> None:
@@ -266,7 +272,7 @@ def birthdays(kwards, book: AddressBook) -> None:
         raise InputError(f"birthdays - days {days} must be a positive integer")
     if days < 1:
         raise InputError(f"birthdays - days {days} must be more than 0")
-    ConsoleOutput().print_msg(f"People to congratulate next {days} days:")
+    ConsoleOutput().print_msg(f"Upcoming birthdays in next {days} days:")
     ConsoleOutput().print_map(("Name", "Birthday"), book.get_upcoming_birthdays(days))
 
 
@@ -282,6 +288,7 @@ def show_help(kwards=None, _=None):
         None: This function does not raise any exceptions.
     '''
     ConsoleOutput().print_map(("Command", "Description"), command_descriptions)
+
 
 @error_handler
 def add_note(kwards, notebook: Notebook) -> None:
@@ -312,7 +319,8 @@ def add_note(kwards, notebook: Notebook) -> None:
     note = Note(title, text, tags)
     notebook.add_note(note)
 
-    ConsoleOutput().print_msg("Note added")
+    ConsoleOutput().print_msg(f"Note {note.id} added")
+
 
 @error_handler
 def change_note(kwards, notebook: Notebook) -> None:
@@ -331,22 +339,38 @@ def change_note(kwards, notebook: Notebook) -> None:
     id = int(kwards.get("id"))
     new_title = kwards.get("title")
     new_text = kwards.get("text")
+    old_tag = kwards.get("old_tag")
+    new_tag = kwards.get("new_tag")
 
     if not id and not (new_title or new_text):
         raise InputError(
             "change_note : id or modifying attribute was not provided")
 
     note = notebook.find_note_by_id(id)
-    message = "Note was updated"
+    message = f"Note {note.id} was updated"
     if note:
         if new_text:
             note.text = new_text
-        if new_title:
-            note.header = new_title
+        elif new_title:
+            note.title = new_title
+        elif old_tag or new_tag:
+            if old_tag and new_tag:
+                remove_success = note.remove_tag(old_tag)
+                if remove_success:
+                    note.add_tag(new_tag)
+                else:
+                    raise InputError(f"Note {note.id} has no tag {old_tag}")
+            else:
+                raise InputError(
+                    "old tag and new tag properties are required")
+        else:
+            message = f"None of properties for note {note.id} was changed"
+
     else:
-        message = "Note was not found"
+        raise InputError(f"Note {id} was not found")
 
     ConsoleOutput().print_msg(message)
+
 
 @error_handler
 def remove_note(kwards, notebook: Notebook) -> None:
@@ -367,13 +391,13 @@ def remove_note(kwards, notebook: Notebook) -> None:
         raise InputError("remove_note : id of note was not provided")
 
     note = notebook.find_note_by_id(id)
-    message = "Note was removed"
     if note:
         notebook.remove_note(note)
     else:
-        message = "Note was not found"
+        raise InputError(f"Note {id} was not found")
 
-    ConsoleOutput().print_msg(message)
+    ConsoleOutput().print_msg(f"Note {id} was removed")
+
 
 @error_handler
 def add_tag(kwards, notebook: Notebook) -> None:
@@ -395,13 +419,14 @@ def add_tag(kwards, notebook: Notebook) -> None:
         raise InputError("add_tag : id or tag of note was not provided")
 
     note = notebook.find_note_by_id(id)
-    message = f"Tag {tag} for note was added"
+    message = f"Tag {tag} for note {id} was added"
     if note:
         note.add_tag(tag)
     else:
-        message = "Note was not found"
+        raise InputError(f"Note {id} was not found")
 
     ConsoleOutput().print_msg(message)
+
 
 @error_handler
 def remove_tag(kwards, notebook: Notebook) -> None:
@@ -423,16 +448,19 @@ def remove_tag(kwards, notebook: Notebook) -> None:
         raise InputError("remove_tag : id or tag of note was not provided")
 
     note = notebook.find_note_by_id(id)
-    message = f"Tag {tag} for note was removed"
+    message = f"Tag {tag} from note {id} was removed"
     if note:
-        note.remove_tag(tag)
+        res = note.remove_tag(tag)
+        if not res:
+            raise InputError(f"Note {note.id} has no tag {tag}")
     else:
-        message = "Note was not found"
+        raise InputError(f"Note {id} was not found")
 
     ConsoleOutput().print_msg(message)
 
+
 @error_handler
-def show_notes(kwards, notebook: Notebook) -> None :
+def show_notes(kwards, notebook: Notebook) -> None:
     '''
     Show all notes in the notebook.
     The function retrieves all notes from the notebook and prints them to the console.
@@ -450,8 +478,9 @@ def show_notes(kwards, notebook: Notebook) -> None :
         ", ".join(sorted(list(note.tags))) if note.tags else "",
         note.id)))
 
+
 @error_handler
-def find_notes(kwards, notebook: Notebook) -> None :
+def find_notes(kwards, notebook: Notebook) -> None:
     '''
     Find notes by tags in the notebook.
     The function takes keyword arguments for tags and searches for notes that match the specified tags.
@@ -462,16 +491,26 @@ def find_notes(kwards, notebook: Notebook) -> None :
     Raises:
         InputError: If the tags are not provided or are invalid.
     '''
-
+    id = kwards.get("id")
+    title = kwards.get("title")
+    text = kwards.get("text")
     tags_str = kwards.get("tags")
 
     tags = {}
-    if tags_str:
+    res = []
+    if id:
+        res.append(notebook.find_note_by_id(int(id)))
+    elif title:
+        res = notebook.find_note(title, "title")
+    elif text:
+        res = notebook.find_note(text, "text")
+    elif tags_str:
         tags_str = tags_str.lower().strip()
         tags = set(tags_str.split(","))
+        res = notebook.find_note_by_tags(tags)
 
-    res = notebook.find_note_by_tags(tags)
     ConsoleOutput().print_object_list(sorted(res))
+
 
 @error_handler
 def say_bye(kwards, bot):
@@ -519,6 +558,7 @@ class Command:
         :return: Result of the function call.
         """
         return self.func(args, self.receiver)
+
 
 class ConsoleBot:
     """

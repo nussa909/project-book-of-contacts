@@ -1,40 +1,37 @@
 
 from collections import UserList
+import re
 
 
 class Note:
     """
     Represents a note in a notebook.
+
+    Attributes:
+        id (int): Unique identifier for the note.
+        title (str): Title of the note.
+        text (str): Text content of the note.
+        tags (set): Set of tags associated with the note.
     """
     current_id = 0
 
     @staticmethod
     def sort_by_title(note: "Note") -> str:
         '''
-        Sort notes by their header in lowercase.
-        This static method is used to sort notes by their header.
-        It converts the header to lowercase to ensure case-insensitive sorting.
+        Sort notes by their title in lowercase.
 
         Args:
-            note (Note): The note to sort by header.
+            note (Note): The note to sort by title.
         Returns:
-            str: The header of the note in lowercase.
+            str: The title of the note in lowercase.
         '''
-        return (note.header.lower())
+        return (note.title.lower())
 
-    def __init__(self, header: str, text: str, tags={}):
-        '''
-        Initialize a Note instance with a header, text, and optional tags.
-
-        Args:
-            header (str): The title of the note.
-            text (str): The content of the note.
-            tags (set, optional): A set of tags associated with the note. Defaults to an empty set.
-        '''
+    def __init__(self, title: str, text: str, tags={}):
         self.id = Note.__get_next_id()
-        self.header = header
-        self.text = text
-        self.tags = set(tags)
+        self.title = title.capitalize()
+        self.text = text.capitalize()
+        self.tags = {tag.lower() for tag in tags}
 
     def add_tag(self, tag: str):
         '''
@@ -45,7 +42,7 @@ class Note:
             tag (str): The tag to add to the note.
         '''
         if not tag in self.tags:
-            self.tags.add(tag)
+            self.tags.add(tag.lower())
 
     def remove_tag(self, tag: str):
         '''
@@ -55,8 +52,12 @@ class Note:
         Args:
             tag (str): The tag to remove from the note.
         '''
+        res = False
         if tag in self.tags:
             self.tags.remove(tag)
+            res = True
+
+        return res
 
     @classmethod
     def __get_next_id(cls):
@@ -68,7 +69,7 @@ class Note:
         '''
         cls.current_id += 1
         return cls.current_id
-    
+
     def __lt__(self, other):
         '''
         Compare two notes based on their IDs.
@@ -87,7 +88,7 @@ class Note:
         Returns:
             str: A formatted string representation of the note.
         '''
-        return f"#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
+        return f"#{self.id}:{self.title}\ntags:{list(self.tags)}\n{self.text}"
 
     def __repr__(self):
         '''
@@ -96,7 +97,7 @@ class Note:
         Returns:
             str: A formatted string representation of the note for debugging.
         '''
-        return f"\n#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
+        return f"\n#{self.id}:{self.title}\ntags:{list(self.tags)}\n{self.text}"
 
 
 class Notebook(UserList):
@@ -150,6 +151,44 @@ class Notebook(UserList):
             if note.id == id:
                 return note
 
+
+    def find_note(self, query: str, field_type: str) -> list[Note]:
+        """
+        Find notes by a query string in a specified field (title or text).
+        Supports SQL-like wildcards: % for any sequence, _ for any single character.
+
+        Args:
+            query (str): The search query, may contain wildcards.
+            field_type (str): The field to search ('title' or 'text').
+
+        Returns:
+            list[Note]: List of matching Note objects.
+        """
+        def like(pattern: str, text: str) -> bool:
+            regex = '^' + re.escape(pattern).replace('%',
+                                                     '.*').replace('_', '.') + '$'
+            return re.match(regex, text) is not None
+
+        matching_records = []
+        search_value = query.lower()
+
+        if field_type not in ['title', 'text']:
+            return matching_records
+
+        for note in self.data:
+            field_value = None
+
+            if field_type == 'title' and note.title:
+                field_value = note.title
+            elif field_type == 'text' and note.text:
+                field_value = note.text
+
+            if field_value:
+                if like(search_value, field_value.lower()):
+                    matching_records.append(note)
+
+        return matching_records
+
     def get_notes(self):
         '''
         Get all notes in the notebook.
@@ -158,7 +197,7 @@ class Notebook(UserList):
         Returns:
             list: A list of all Note objects in the notebook.
         '''
-        return self.data
+        return [note for note in sorted(self.data)]
 
     def __setstate__(self, state):
         '''
