@@ -1,5 +1,6 @@
 
 from collections import UserList
+import re
 
 
 class Note:
@@ -7,35 +8,39 @@ class Note:
 
     @staticmethod
     def sort_by_title(note):
-        return (note.header.lower())
+        return (note.title.lower())
 
-    def __init__(self, header: str, text: str, tags={}):
+    def __init__(self, title: str, text: str, tags={}):
         self.id = Note.__get_next_id()
-        self.header = header
-        self.text = text
-        self.tags = set(tags)
+        self.title = title.capitalize()
+        self.text = text.capitalize()
+        self.tags = {tag.lower() for tag in tags}
 
     def add_tag(self, tag):
         if not tag in self.tags:
-            self.tags.add(tag)
+            self.tags.add(tag.lower())
 
     def remove_tag(self, tag):
+        res = False
         if tag in self.tags:
             self.tags.remove(tag)
+            res = True
+
+        return res
 
     @classmethod
     def __get_next_id(cls):
         cls.current_id += 1
         return cls.current_id
-    
+
     def __lt__(self, other):
         return self.id < other.id
 
     def __str__(self):
-        return f"#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
+        return f"#{self.id}:{self.title}\ntags:{list(self.tags)}\n{self.text}"
 
     def __repr__(self):
-        return f"\n#{self.id}:{self.header}\ntags:{list(self.tags)}\n{self.text}"
+        return f"\n#{self.id}:{self.title}\ntags:{list(self.tags)}\n{self.text}"
 
 
 class Notebook(UserList):
@@ -54,8 +59,35 @@ class Notebook(UserList):
             if note.id == id:
                 return note
 
+    def find_note(self, query: str, field_type: str) -> list[Note]:
+
+        def like(pattern: str, text: str) -> bool:
+            regex = '^' + re.escape(pattern).replace('%',
+                                                     '.*').replace('_', '.') + '$'
+            return re.match(regex, text) is not None
+
+        matching_records = []
+        search_value = query.lower()
+
+        if field_type not in ['title', 'text']:
+            return matching_records
+
+        for note in self.data:
+            field_value = None
+
+            if field_type == 'title' and note.title:
+                field_value = note.title
+            elif field_type == 'text' and note.text:
+                field_value = note.text
+
+            if field_value:
+                if like(search_value, field_value.lower()):
+                    matching_records.append(note)
+
+        return matching_records
+
     def get_notes(self):
-        return self.data
+        return [note for note in sorted(self.data)]
 
     def __setstate__(self, state):
         self.__dict__.update(state)

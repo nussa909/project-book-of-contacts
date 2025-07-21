@@ -73,7 +73,12 @@ class ConsoleOutput:
                                  style="blue", no_wrap=True)
 
             for row in data_dct:
-                args = [str(item) for item in row.values()]
+                args = []
+                for item in row.values():
+                    if isinstance(item, set) and not item:
+                        args.append("{}")
+                    else:
+                        args.append(str(item))
                 table.add_row(*args)
 
             self.__console.print(table)
